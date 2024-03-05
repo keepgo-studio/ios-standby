@@ -1,6 +1,6 @@
 // @ts-check
 
-import { isMobile } from "../../utils.js";
+import { isMobile, minMax } from "../../utils.js";
 
 class Ease {
   static easeOutExpo = (/** @type {number} */ x) => { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
@@ -58,110 +58,108 @@ export function addSwitchAnimation(root) {
 
   root.classList.add("ios-switch--container");
 
-  root.style.overflow = isMobile() ? 'auto' : 'hidden';
 
   let idx = 0;
   let lifeCycle = false;
 
-  /**
-   * @param {number} destX
-   * @param {number} duration
-   * 
-   * @description
-   * 
-   * https://gist.github.com/markgoodyear/9496715
-   */
-  function moveTo(destX, duration) {
-    const from = root.scrollLeft,
-      start = Date.now();
-
-    function scroll() {
-      if (!lifeCycle) return;
-
-      const currentTime = Date.now(),
-        time = Math.min(1, ((currentTime - start) / duration)),
-        easedT = Ease.easeOutExpo(time);
-
-      root.scrollLeft = (easedT * (destX - from)) + from;
-
-      if (time < 1) requestAnimationFrame(scroll);
-      // else -> callback
-    }
-
-    requestAnimationFrame(scroll);
-  }
-
-  /**
-   * 
-   * @param {number} x 
-   * @param {number} min 
-   * @param {number} max
-   */
-  function filterX(x, min, max) {
-    if (x < 0) return min;
-    else if (x > max) return max;
-    return x;
-  }
-
+  root.style.overflowX = isMobile() ? 'auto' : 'hidden';
+  root.style.overflowY = 'hidden';
   /**
    * ------------------------
    * event handler for PC
    * ------------------------
    */
-  // moving start
-  root.addEventListener('mousedown', (e) => {
-    lifeCycle = false;
-    COOR.setIsClickingOn(e.x);
-  });
+  if (!isMobile()) {
+    /**
+     * @param {number} destX
+     * @param {number} duration
+     * 
+     * @description
+     * 
+     * https://gist.github.com/markgoodyear/9496715
+     */
+    function moveTo(destX, duration) {
+      const from = root.scrollLeft,
+        start = Date.now();
 
-  // while moving
-  const THRESHOLD = WIDTH / 3;
+      function scroll() {
+        if (!lifeCycle) return;
 
-  root.addEventListener('mousemove', (e) => {
-    COOR.update(e.x, undefined, () => {
-      const from = root.scrollLeft;
+        const currentTime = Date.now(),
+          time = Math.min(1, ((currentTime - start) / duration)),
+          easedT = Ease.easeOutExpo(time);
 
-      root.scrollLeft = filterX(from + -e.movementX, 0, WIDTH);
-    });
-  });
+        root.scrollLeft = (easedT * (destX - from)) + from;
 
-  // moving stop
-  root.addEventListener('mouseup', () => {
-    lifeCycle = true;
-    COOR.setIsClickingOff();
+        if (time < 1) requestAnimationFrame(scroll);
+        // else -> callback
+      }
 
-    const dist = Math.abs(COOR.x1 - COOR.x2);
-    if (THRESHOLD <= dist) {
-      const d = COOR.x2 - COOR.x1 > 0 ? -1 : 1;
-
-      idx = filterX(idx + d, 0, N - 1);
+      requestAnimationFrame(scroll);
     }
-    moveTo(WIDTH * idx, 1000);
-  });
 
-  root.addEventListener('mouseleave', () => {
-    lifeCycle = true;
+    const THRESHOLD = WIDTH / 3;
+    
+    function updateIdx() {
+      const dist = Math.abs(COOR.x1 - COOR.x2);
 
-    COOR.setIsClickingOff();
-    moveTo(WIDTH * idx, 1000);
-  });
+      if (THRESHOLD <= dist) {
+        const d = COOR.x2 - COOR.x1 > 0 ? -1 : 1;
+        idx = minMax(idx + d, 0, N - 1);
+      }
+    }
 
+    // moving start
+    root.addEventListener('mousedown', (e) => {
+      lifeCycle = false;
+      COOR.setIsClickingOn(e.x);
+    });
 
+    // while moving
+
+    root.addEventListener('mousemove', (e) => {
+      COOR.update(e.x, undefined, () => {
+        const from = root.scrollLeft;
+
+        root.scrollLeft = minMax(from + -e.movementX, 0, WIDTH);
+      });
+    });
+
+    // moving stop
+    root.addEventListener('mouseup', () => {
+      lifeCycle = true;
+      COOR.setIsClickingOff();
+
+      updateIdx();
+      moveTo(WIDTH * idx, 1000);
+    });
+
+    root.addEventListener('mouseleave', (e) => {
+      lifeCycle = true;
+      COOR.setIsClickingOff();
+
+      COOR.x2 = e.x;
+      updateIdx();
+      moveTo(WIDTH * idx, 1000);
+    });
+  }
   /**
    * ------------------------
    * event handler for MOBILE
    * ------------------------
    */
-  // root.addEventListener('touchstart', (e) => {
-  //   coor.setIsClickingOn(e.touches[0].clientX);
-  // })
+  else {
+    // root.addEventListener('touchstart', (e) => {
+    //   coor.setIsClickingOn(e.touches[0].clientX);
+    // })
 
-  // root.addEventListener('touchmove', () => {
-  // 
-  // })
-  // root.addEventListener('touchend', () => {
-  //   coor.setIsClickingOff();
-  // })
+    // root.addEventListener('touchmove', () => {
+    // 
+    // })
+    // root.addEventListener('touchend', () => {
+    //   coor.setIsClickingOff();
+    // })
+  }
 
 
   /**
@@ -170,26 +168,27 @@ export function addSwitchAnimation(root) {
    * ------------------------
    */
   // init
-  const RATIO_INIT = 0.6;
+  const SCALE_INIT = 0.6, FILTER_INIT = 0;
   const children = [...root.children];
   const elemCoor = children.map((_, idx) => idx * WIDTH);
 
   children.forEach(elem => {
     // @ts-ignore
-    elem.style.scale = RATIO_INIT;
+    elem.style.scale = SCALE_INIT;
     // @ts-ignore
-    elem.style.filter = `brightness(${RATIO_INIT})`;
+    elem.style.filter = `brightness(${FILTER_INIT})`;
   });
 
   function renderChild() {
     children.forEach((elem, idx) => {
-      const ratio = filterX(Math.abs(elemCoor[idx] - root.scrollLeft), 0, WIDTH) / WIDTH;
+      const ratio = minMax(Math.abs(elemCoor[idx] - root.scrollLeft), 0, WIDTH) / WIDTH;
       // RATIO_INIT + (1 - RATIO_INIT) * (1 - ratio);
-      const alpha = 1 - ratio * (1 - RATIO_INIT);
+      const alpha = 1 - ratio * (1 - SCALE_INIT),
+        beta = 1 - ratio * (1 - FILTER_INIT);
       // @ts-ignore
       elem.style.scale = alpha;
       // @ts-ignore
-      elem.style.filter = `brightness(${alpha})`;
+      elem.style.filter = `brightness(${beta})`;
     });
 
     requestAnimationFrame(renderChild);

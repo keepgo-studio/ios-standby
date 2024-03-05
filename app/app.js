@@ -2,6 +2,9 @@
 
 import { addSwitchAnimation } from "./core/animation.js";
 import Component from "./core/component.js";
+import { Timer } from "./timer/timer.js";
+
+import './timer/ui.js';
 
 class Screen2 extends Component {
   render() {
@@ -17,7 +20,8 @@ class Screen1 extends Component {
   render() {
     this.innerHTML = `
       <section id="screen1">
-      1
+        <app-timer-circle></app-timer-circle>
+        <!-- TODO widget ui -->
       </section>
     `;
   }
@@ -35,17 +39,15 @@ class App extends Component {
   setup() {
     // [ ] turn on weather
     // [ ] turn on geo
-    // [ ] turn on timer
+    // [x] turn on timer
+    Timer.on();
   }
 
   connectedCallback() {
-    /** @type {HTMLElement | null} */
-    const app = this.querySelector("#app");
+    const app = /** @type {HTMLElement} */ (this.querySelector("#app"));
 
-    if (app) {
-      // [x] turn on animation
-      addSwitchAnimation(app);
-    }
+    // [x] turn on animation
+    addSwitchAnimation(app);
   }
 }
 
