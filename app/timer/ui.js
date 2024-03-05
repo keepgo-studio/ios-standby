@@ -86,7 +86,7 @@ class TimerUiCircleClock extends Component {
 
   drawHourNums() {
     const fontSize = this._cWidth / 10;
-    this._ctx.font = `${fontSize}px sf pro, sans-serif`;
+    this._ctx.font = `${fontSize}px "sans-serif"`;
     this._ctx.textAlign = "center";
     this._ctx.textBaseline = "middle";
     this._ctx.fillStyle = "#fff";
@@ -210,11 +210,12 @@ class TimerUiCircleClock extends Component {
     this._cWidth = w;
     this._cHeight = w;
 
-    this._radius = this._cWidth / 2 - 24;
+    this._radius = this._cWidth / 2 - 32;
     this._ctx = ctx;
     
     this.draw();
 
+    // [ ] 최적회: 보일 때만 시계가 작동하게
     requestAnimationFrame(this.animation.bind(this));
   }
 }

@@ -5,6 +5,7 @@ import Component from "./core/component.js";
 import { Timer } from "./timer/timer.js";
 
 import './timer/ui.js';
+import './components/widget.js';
 
 class Screen2 extends Component {
   render() {
@@ -21,7 +22,7 @@ class Screen1 extends Component {
     this.innerHTML = `
       <section id="screen1">
         <app-timer-circle></app-timer-circle>
-        <!-- TODO widget ui -->
+        <app-widget></app-widget>
       </section>
     `;
   }
@@ -47,7 +48,7 @@ class App extends Component {
     const app = /** @type {HTMLElement} */ (this.querySelector("#app"));
 
     // [x] turn on animation
-    addSwitchAnimation(app);
+    addSwitchAnimation(app, 'horizontal');
   }
 }
 
