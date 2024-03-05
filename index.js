@@ -2,4 +2,4 @@ import './app/app.js';
 
 const root = document.getElementById("root");
 
-root.innerHTML = '<app-root></app-root>';
+window.onload = () => root.innerHTML = '<app-root></app-root>';
