@@ -1,0 +1,20 @@
+/* 
+  - naming rules
+
+    {prefix}-{feature}--{ * }
+
+  - prefix: ios
+  - feature: [switch, ]
+*/
+.ios-switch--container {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.ios-switch--container > * {
+  flex: 0 0 auto;
+  height: 100%;
+  width: 100%;
+}
