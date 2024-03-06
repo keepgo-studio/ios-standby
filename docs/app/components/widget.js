@@ -1,7 +1,7 @@
 // @ts-check
 
 import { delay } from "../../utils.js";
-import { IOS_INTERNET, IOS_SVG, WEATHER_CODE } from "../../vars.js";
+import { IOS_INTERNET, IOS_STORE, IOS_SVG, WEATHER_CODE } from "../../vars.js";
 import { addSwitchAnimation, iosFadeIn, iosFadeOut } from "../core/animation.js";
 import Component, { SubscribeComponent } from "../core/component.js";
 import { Geo } from "../service/geo/geo.js";
@@ -159,6 +159,17 @@ class Online extends SubscribeComponent {
   }
 }
 
+
+class Store extends Component {
+  render() {
+    this.innerHTML = `
+      <section id="widget-store">
+        ${IOS_STORE}
+      </section>
+    `;
+  }
+}
+
 class Widget extends Component {
   render() {
     this.innerHTML = `
@@ -166,6 +177,7 @@ class Widget extends Component {
         <div class="container">
           <app-home-widget></app-home-widget>
           <app-online-widget></app-online-widget>
+          <app-store-widget></app-store-widget>
         </div>
       </seciton>
     `;
@@ -181,5 +193,7 @@ class Widget extends Component {
 customElements.define('app-home-widget', Home);
 
 customElements.define('app-online-widget', Online);
+
+customElements.define('app-store-widget', Store);
 
 customElements.define('app-widget', Widget);

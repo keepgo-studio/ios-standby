@@ -40,7 +40,12 @@ export const IOS_INTERNET = {
   `
 };
 
-export const IOS_STORE = `<svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 120 120" id="apple-store"><defs><linearGradient id="a" x2="120" y1="60" y2="60" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fefefe"></stop><stop offset="1" stop-color="#fefefe"></stop></linearGradient><linearGradient id="b" x1="60" x2="60" y1="17.05" y2="98.62" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00e2f1"></stop><stop offset="1" stop-color="#0297d4"></stop></linearGradient></defs><rect width="120" height="120" fill="url(#a)" rx="26"></rect><path fill="url(#b)" d="M90 29H77.38a17.49 17.49 0 0 0-34.76 0H30a6 6 0 0 0-6 6v58a6 6 0 0 0 6 6h60a6 6 0 0 0 6-6V35a6 6 0 0 0-6-6ZM60 16.46A14.51 14.51 0 0 1 74.35 29h-28.7A14.51 14.51 0 0 1 60 16.46Z"></path><path fill="#f9f9f9" fill-rule="evenodd" d="M68.47 62A7.47 7.47 0 0 1 72 55.69a7.75 7.75 0 0 0-6-3.28c-2.57-.25-5 1.52-6.32 1.52s-3.32-1.47-5.44-1.43a8.08 8.08 0 0 0-6.84 4.13c-2.9 5-.74 12.53 2.1 16.63 1.39 2 3 4.26 5.21 4.17s2.88-1.34 5.4-1.34 3.24 1.34 5.45 1.3 3.68-2 5-4a17.85 17.85 0 0 0 2.29-4.7A7.26 7.26 0 0 1 68.47 62zm-4.15-12.29A7.29 7.29 0 0 0 66 44.44a7.38 7.38 0 0 0-4.86 2.5A6.89 6.89 0 0 0 59.42 52a6.13 6.13 0 0 0 4.9-2.29z"></path></svg>`;
+export const IOS_STORE = `
+  <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 120 120" id="apple-store">
+    <a href="https://www.apple.com/kr/store" target="_blank">
+      <defs><linearGradient id="a" x2="120" y1="60" y2="60" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fefefe"></stop><stop offset="1" stop-color="#fefefe"></stop></linearGradient><linearGradient id="b" x1="60" x2="60" y1="17.05" y2="98.62" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00e2f1"></stop><stop offset="1" stop-color="#0297d4"></stop></linearGradient></defs><path fill="url(#b)" d="M90 29H77.38a17.49 17.49 0 0 0-34.76 0H30a6 6 0 0 0-6 6v58a6 6 0 0 0 6 6h60a6 6 0 0 0 6-6V35a6 6 0 0 0-6-6ZM60 16.46A14.51 14.51 0 0 1 74.35 29h-28.7A14.51 14.51 0 0 1 60 16.46Z"></path><path fill="#f9f9f9" fill-rule="evenodd" d="M68.47 62A7.47 7.47 0 0 1 72 55.69a7.75 7.75 0 0 0-6-3.28c-2.57-.25-5 1.52-6.32 1.52s-3.32-1.47-5.44-1.43a8.08 8.08 0 0 0-6.84 4.13c-2.9 5-.74 12.53 2.1 16.63 1.39 2 3 4.26 5.21 4.17s2.88-1.34 5.4-1.34 3.24 1.34 5.45 1.3 3.68-2 5-4a17.85 17.85 0 0 0 2.29-4.7A7.26 7.26 0 0 1 68.47 62zm-4.15-12.29A7.29 7.29 0 0 0 66 44.44a7.38 7.38 0 0 0-4.86 2.5A6.89 6.89 0 0 0 59.42 52a6.13 6.13 0 0 0 4.9-2.29z"></path>
+    </a>
+  </svg>`;
 
 export const IOS_DURATION = 700;
 
