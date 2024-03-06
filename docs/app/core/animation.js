@@ -61,7 +61,7 @@ export function addSwitchAnimation(root, direction, bubble) {
 
   const N = root.children.length;
   const COOR = new MouseCoor();
-  var LENGTH, SCROLL_REF;
+  var LENGTH, SCROLL_REF, TOTAL_LENGTH;
 
   if (direction === 'horizontal') {
     LENGTH = root.offsetWidth;
@@ -79,15 +79,17 @@ export function addSwitchAnimation(root, direction, bubble) {
     root.style.flexDirection = 'column';
   }
 
+  TOTAL_LENGTH = LENGTH * (N - 1);
+
   /**
-   * @param {number} destX
+   * @param {number} dest
    * @param {number} duration
    * 
    * @description
    * 
    * https://gist.github.com/markgoodyear/9496715
    */
-  function moveTo(destX, duration) {
+  function moveTo(dest, duration) {
     const from = root[SCROLL_REF],
       start = Date.now();
 
@@ -98,7 +100,7 @@ export function addSwitchAnimation(root, direction, bubble) {
         time = Math.min(1, ((currentTime - start) / duration)),
         easedT = Ease.easeOutExpo(time);
 
-      root[SCROLL_REF] = (easedT * (destX - from)) + from;
+      root[SCROLL_REF] = (easedT * (dest - from)) + from;
 
       if (time < 1) requestAnimationFrame(scroll);
       // else -> callback
@@ -140,7 +142,7 @@ export function addSwitchAnimation(root, direction, bubble) {
         const from = root[SCROLL_REF];
         const movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`];
 
-        root[SCROLL_REF] = minMax(from + -movement, 0, LENGTH);
+        root[SCROLL_REF] = minMax(from + -movement, 0, TOTAL_LENGTH);
       });
     });
 
