@@ -39,17 +39,9 @@ export const checkOrigin = Functions.region(
 export const getCurrentWeather = Functions.region(
   "asia-northeast3"
 ).https.onRequest(middlewareSetCORS(async (req: Functions.https.Request, res: Functions.Response<any>) => {
-  const { lat, lon } = req.query;
-
-  if (!lat || !lon) {
-    res.status(400).send("Wrong Parameter enter");
-    return;
-  }
-
   const data = await axios.get(`${API_URL}/data/2.5/weather`, {
     params: {
-      lat,
-      lon,
+      ...req.query,
       appid: process.env.API_ID,
       limit: 5
     }
@@ -63,19 +55,11 @@ export const getCurrentWeather = Functions.region(
 export const getCurrentGeo = Functions.region(
   "asia-northeast3"
 ).https.onRequest(middlewareSetCORS(async (req: Functions.https.Request, res: Functions.Response<any>) => {
-  const { lat, lon } = req.query;
-
-  if (!lat || !lon) {
-    res.status(400).send("Wrong paramter enter");
-    return;
-  }
   
   const data = await axios.get(`${API_URL}/geo/1.0/reverse`, {
     params: {
-      lat,
-      lon,
+      ...req.query,
       appid: process.env.API_ID,
-      limit: 5
     }
   })
   .then(val => val.data)
