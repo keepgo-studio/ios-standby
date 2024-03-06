@@ -24,11 +24,11 @@
 
 .ios-disappear {
   opacity: 0 !important;
-  transition: ease-out var(--ios-duration) !important;
+  transition: opacity ease-out var(--ios-duration) !important;
   pointer-events: none !important;
 }
 
 .ios-appear {
   opacity: 1 !important;
-  transition: ease-out var(--ios-duration) !important;
+  transition: opacity ease-out var(--ios-duration) !important;
 }

@@ -1,10 +1,11 @@
 // @ts-check
 
 import { delay } from "../../utils.js";
-import { IOS_SVG, WEATHER_CODE } from "../../vars.js";
+import { IOS_INTERNET, IOS_SVG, WEATHER_CODE } from "../../vars.js";
 import { addSwitchAnimation, iosFadeIn, iosFadeOut } from "../core/animation.js";
 import Component, { SubscribeComponent } from "../core/component.js";
 import { Geo } from "../service/geo/geo.js";
+import { Internet } from "../service/internet/internet.js";
 import { Weather } from "../service/weather/weather.js";
 
 class Home extends SubscribeComponent {
@@ -112,16 +113,51 @@ class Home extends SubscribeComponent {
   }
 }
 
-class Internet extends Component {
+class Online extends SubscribeComponent {
   render() {
     this.innerHTML = `
       <section id="widget-internet">
+        <div class="svg-wrapper"></div>
 
+        <div class="text"></div>
+
+        <div class="background"></div>
       </section>
     `;
   }
-}
 
+  afterMount() {
+    const root = /** @type {Element} */ (this.querySelector("#widget-internet"));
+    const background = /** @type {Element} */ (this.querySelector("#widget-internet .background"));
+    const svgWrapperElem = /** @type {Element} */ (this.querySelector("#widget-internet .svg-wrapper"));
+    const svgTextElem = /** @type {Element} */ (this.querySelector("#widget-internet .text"));
+
+    this.addSubscribeHandler("internet/update", async (e) => {
+      const isOnline = e.detail;
+      
+      root.classList.remove(isOnline ? 'off' : 'on');
+      root.classList.add(isOnline ? 'on' : 'off');
+
+      iosFadeOut(background);
+      iosFadeOut(svgWrapperElem);
+      iosFadeOut(svgTextElem);
+
+      await delay(100);
+      iosFadeIn(background);
+
+      await delay();
+      
+      svgWrapperElem.innerHTML = isOnline ? IOS_INTERNET.on : IOS_INTERNET.off;
+      iosFadeIn(svgWrapperElem);
+
+      await delay();
+      svgTextElem.textContent = isOnline ? 'online' : 'offline';
+      iosFadeIn(svgTextElem);
+    });
+
+    Internet.subscribe(this);
+  }
+}
 
 class Widget extends Component {
   render() {
@@ -129,7 +165,7 @@ class Widget extends Component {
       <seciton id="widget">
         <div class="container">
           <app-home-widget></app-home-widget>
-          <app-internet-widget></app-internet-widget>
+          <app-online-widget></app-online-widget>
         </div>
       </seciton>
     `;
@@ -144,6 +180,6 @@ class Widget extends Component {
 
 customElements.define('app-home-widget', Home);
 
-customElements.define('app-inernet-widget', Internet);
+customElements.define('app-online-widget', Online);
 
 customElements.define('app-widget', Widget);
