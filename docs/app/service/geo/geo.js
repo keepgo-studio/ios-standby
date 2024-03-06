@@ -102,7 +102,8 @@ export class Geo {
         this._loadGeo();
 
         setInterval(() => this._loadGeo(), this._updateSec);
-      }
+      },
+      () => alert("without geolocation, the app cannot get weather information")
     );
   }
 
