@@ -2,16 +2,14 @@
 
 import { addSwitchAnimation } from "./core/animation.js";
 import Component from "./core/component.js";
-import { Timer } from "./timer/timer.js";
 
-import './timer/ui.js';
+import './service/timer/ui.js';
 import './components/widget.js';
 
 class Screen2 extends Component {
   render() {
     this.innerHTML = `
       <section id="screen2">
-      2
       </section>
     `;
   }
@@ -37,17 +35,10 @@ class App extends Component {
       </div>
     `;
   }
-  setup() {
-    // [ ] turn on weather
-    // [ ] turn on geo
-    // [x] turn on timer
-    Timer.on();
-  }
 
-  connectedCallback() {
+  afterMount() {
     const app = /** @type {HTMLElement} */ (this.querySelector("#app"));
 
-    // [x] turn on animation
     addSwitchAnimation(app, 'horizontal');
   }
 }

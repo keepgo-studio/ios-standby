@@ -12,3 +12,27 @@ export const IOS_SVG = {
     </svg>  
   `
 }
+
+export const IOS_DURATION = 700;
+
+export const WEATHER_CODE = {
+  "01d": "sun.max.fill.png",
+  "02d": "cloud.sun.fill.png",
+  "03d": "cloud.fill.png",
+  "04d": "smoke.fill.png",
+  "09d": "cloud.heavyrain.fill.png",
+  "10d": "cloud.sun.rain.fill.png",
+  "11d": "cloud.bolt.fill.png",
+  "13d": "snowflake.fill.png",
+  "50d": "cloud.fog.fill.png",
+
+  "01n": "sun.max.png",
+  "02n": "cloud.sun.png",
+  "03n": "cloud.png",
+  "04n": "smoke.png",
+  "09n": "cloud.heavyrain.png",
+  "10n": "cloud.sun.rain.png",
+  "11n": "cloud.bolt.png",
+  "13n": "snowflake.png",
+  "50n": "cloud.fog.png",
+}

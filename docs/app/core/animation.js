@@ -240,3 +240,19 @@ export function addSwitchAnimation(root, direction, bubble) {
 
   requestAnimationFrame(renderChild);
 }
+
+/**
+ * @param {Element} elem 
+ */
+export function iosFadeIn(elem) {
+  elem.classList.remove('ios-disappear')
+  elem.classList.add('ios-appear');
+}
+
+/**
+ * @param {Element} elem 
+ */
+export function iosFadeOut(elem) {
+  elem.classList.remove('ios-appear');
+  elem.classList.add('ios-disappear')
+}

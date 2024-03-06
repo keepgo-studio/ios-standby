@@ -1,17 +1,14 @@
 // @ts-check
 
-import { minMax, range } from "../../utils.js";
-import Component from "../core/component.js";
+import { minMax, range } from "../../../utils.js";
+import Component from "../../core/component.js";
 import { Timer } from "./timer.js";
 
 class TimerUiRectClock {
 
-
-
 }
+
 class TimerUiTextClock {
-
-
 
 }
 
@@ -38,9 +35,9 @@ class TimerUiCircleClock extends Component {
   draw() {
     this._ctx.clearRect(0, 0, this._cWidth, this._cHeight);
 
-    const hr = Timer.time.getHours(),
-          min = Timer.time.getMinutes(),
-          sec = Timer.time.getSeconds(),
+    const hr = Timer.time.getHours() * 60 * 60 * 1000,
+          min = Timer.time.getMinutes() * 60 * 1000,
+          sec = Timer.time.getSeconds() * 1000,
           mSec = Timer.time.getMilliseconds();
     
     this._ctx.save();
@@ -48,10 +45,10 @@ class TimerUiCircleClock extends Component {
     this.drawHourNums();
     this.drawPointers();
 
-    this.drawHourIndicator(mSec + sec * 1000 + min * 1000 * 60 + hr * 1000 * 60 * 60);
-    this.drawMinuteIndicator(mSec + sec * 1000 + min * 1000 * 60);
+    this.drawHourIndicator(mSec + sec + min + hr);
+    this.drawMinuteIndicator(mSec + sec + min);
     this.drawCentralPointer();
-    this.drawSecondIndicator(mSec + sec * 1000);
+    this.drawSecondIndicator(mSec + sec);
     this._ctx.restore();
   }
 
@@ -69,7 +66,7 @@ class TimerUiCircleClock extends Component {
     range(n).forEach((_, idx) => {
       let rad = ((2 * Math.PI) / n) * idx;
       
-      if (idx % 12 === 0) this._ctx.strokeStyle = '#fff';
+      if (idx % 5 === 0) this._ctx.strokeStyle = '#fff';
       else this._ctx.strokeStyle = '#5c5c5c';
 
       this._ctx.rotate(rad);
@@ -118,6 +115,7 @@ class TimerUiCircleClock extends Component {
   drawHourIndicator(miliSeconds) {
     const rad = ((2 * Math.PI) / (12 * 60 * 60 * 1000)) * miliSeconds;
     
+    this._ctx.save();
     this._ctx.rotate(rad);
     this._ctx.lineCap = "round";
     this._ctx.strokeStyle = '#fff';
@@ -135,6 +133,8 @@ class TimerUiCircleClock extends Component {
     this._ctx.moveTo(0, - this._radius / 6);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
+
+    this._ctx.restore();
   }
 
   /**
@@ -144,6 +144,7 @@ class TimerUiCircleClock extends Component {
     const rad = ((2 * Math.PI) / (60 * 60 * 1000)) * miliSeconds;
 
     this._ctx.save();
+
     this._ctx.rotate(rad);
     this._ctx.lineCap = "round";
     this._ctx.strokeStyle = '#fff';
@@ -170,7 +171,9 @@ class TimerUiCircleClock extends Component {
    */
   drawSecondIndicator(miliSeconds) {
     const rad = ((2 * Math.PI) / (60 * 1000)) * miliSeconds;
+    
     this._ctx.save();
+
     this._ctx.beginPath();
     this._ctx.strokeStyle = "#F79A09";
     this._ctx.lineWidth = minMax(this._cWidth / 120, 2, 6);
@@ -189,7 +192,6 @@ class TimerUiCircleClock extends Component {
     this._ctx.fillStyle = "#000";
     this._ctx.arc(0, 0, minMax(this._cWidth / 90, 4, 8), 0, 2 * Math.PI);
     this._ctx.fill();
-
   }
 
   animation() {
@@ -198,7 +200,7 @@ class TimerUiCircleClock extends Component {
     requestAnimationFrame(this.animation.bind(this));
   }
 
-  connectedCallback() {
+  afterMount() {
     const root = /** @type {HTMLCanvasElement} */ (this.querySelector("#circle-clock"));
     const canvas = /** @type {HTMLCanvasElement} */ (this.querySelector("#circle-clock canvas"));
     const ctx = /** @type {any} */ (canvas.getContext('2d'));
