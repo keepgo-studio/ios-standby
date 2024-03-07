@@ -12,29 +12,31 @@ class Home extends SubscribeComponent {
   render() {
     this.innerHTML = `
       <section id="widget-home">
-        <header>
+        <div class="container">
+          <header>
           --
-        </header>
-        
-        <div class="temp">
-          <p></p>
-        </div>
+          </header>
+          
+          <div class="temp">
+            <p></p>
+          </div>
 
-        <div class="weather">
-          <img />
-          <p class="desc"></p>
-          <p class="min-max"></p>
+          <div class="weather">
+            <img />
+            <p class="desc"></p>
+            <p class="min-max"></p>
+          </div>
         </div>
       </section>
     `;
   }
 
   afterMount() {
-    const tempElem = /** @type {Element} */ (this.querySelector("#widget-home > .temp"));
-    const headerElem = /** @type {Element} */ (this.querySelector("#widget-home header"));
-    const weatherImgElem = /** @type {HTMLImageElement} */ (this.querySelector("#widget-home img"));
-    const weatherDescElem = /** @type {Element} */ (this.querySelector("#widget-home .desc"));
-    const weatherMinMaxElem = /** @type {Element} */ (this.querySelector("#widget-home .min-max"));
+    const tempElem = /** @type {Element} */ (this.querySelector(".container > .temp"));
+    const headerElem = /** @type {Element} */ (this.querySelector(".container header"));
+    const weatherImgElem = /** @type {HTMLImageElement} */ (this.querySelector(".container img"));
+    const weatherDescElem = /** @type {Element} */ (this.querySelector(".container .desc"));
+    const weatherMinMaxElem = /** @type {Element} */ (this.querySelector(".container .min-max"));
 
     this.addSubscribeHandler("weather/update", (e) => {
       const { temp, temp_max, temp_min } = e.detail.main;
@@ -117,20 +119,22 @@ class Online extends SubscribeComponent {
   render() {
     this.innerHTML = `
       <section id="widget-internet">
-        <div class="svg-wrapper"></div>
+        <div class="container">
+          <div class="svg-wrapper"></div>
 
-        <div class="text"></div>
+          <div class="text"></div>
 
-        <div class="background"></div>
+          <div class="background"></div>
+        </div>
       </section>
     `;
   }
 
   afterMount() {
-    const root = /** @type {Element} */ (this.querySelector("#widget-internet"));
-    const background = /** @type {Element} */ (this.querySelector("#widget-internet .background"));
-    const svgWrapperElem = /** @type {Element} */ (this.querySelector("#widget-internet .svg-wrapper"));
-    const svgTextElem = /** @type {Element} */ (this.querySelector("#widget-internet .text"));
+    const root = /** @type {Element} */ (this.querySelector(".container"));
+    const background = /** @type {Element} */ (this.querySelector(".container .background"));
+    const svgWrapperElem = /** @type {Element} */ (this.querySelector(".container .svg-wrapper"));
+    const svgTextElem = /** @type {Element} */ (this.querySelector(".container .text"));
 
     this.addSubscribeHandler("internet/update", async (e) => {
       const isOnline = e.detail;
@@ -164,7 +168,9 @@ class Store extends Component {
   render() {
     this.innerHTML = `
       <section id="widget-store">
+        <div class="container">
         ${IOS_STORE}
+        </div>
       </section>
     `;
   }
@@ -173,20 +179,22 @@ class Store extends Component {
 class Widget extends Component {
   render() {
     this.innerHTML = `
-      <seciton id="widget">
+      <section id="widget">
         <div class="container">
           <app-home-widget></app-home-widget>
           <app-online-widget></app-online-widget>
           <app-store-widget></app-store-widget>
         </div>
-      </seciton>
+      </section>
     `;
   }
 
   afterMount() {
     const container = /** @type {HTMLElement} */ (this.querySelector("#widget > .container"));
 
-    addSwitchAnimation(container, 'vertical', true);
+    addSwitchAnimation(container, 'vertical', {
+      SCALE_INIT: 0.6
+    });
   }
 }
 

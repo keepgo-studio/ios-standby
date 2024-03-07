@@ -1,3 +1,5 @@
+// @ts-check
+
 import { IOS_DURATION } from "./vars.js";
 
 export function isMobile() {
@@ -30,5 +32,5 @@ export function minMax(x, min, max) {
  * @param {number} [n] 
  */
 export function delay(n = IOS_DURATION) {
-  return new Promise(res => setTimeout(() => res(), n));
+  return new Promise(res => setTimeout(() => res(true), n));
 }
