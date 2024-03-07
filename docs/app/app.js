@@ -6,10 +6,26 @@ import Component from "./core/component.js";
 import './service/timer/ui.js';
 import './components/widget.js';
 
+class Screen3 extends Component {
+  render() {
+    this.innerHTML = `
+      <section id="screen3">
+        <app-timer-rect></app-timer-rect>
+      </section>
+    `;
+  }
+
+  afterMount() {
+
+  }
+}
+
+
 class Screen2 extends Component {
   render() {
     this.innerHTML = `
       <section id="screen2">
+      IOS STANDBY
       </section>
     `;
   }
@@ -30,6 +46,7 @@ class App extends Component {
   render() {
     this.innerHTML = `
       <div id="app">
+        <app-screen3></app-screen3>
         <app-screen1></app-screen1>
         <app-screen2></app-screen2>
       </div>
@@ -42,6 +59,8 @@ class App extends Component {
     addSwitchAnimation(app, 'horizontal');
   }
 }
+
+customElements.define('app-screen3', Screen3);
 
 customElements.define('app-screen2', Screen2);
 

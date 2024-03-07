@@ -54,6 +54,14 @@ body {
   align-items: center;
   justify-content: center;
 }
+#rect-clock {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 
 #widget {
@@ -194,6 +202,16 @@ body {
 #screen2 {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 6vw;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(-30deg, #8F71F0 0%, #C355E9 25%, #E93DE1 50%, #FD6CB5 75%, #FD9792 100%);
+}
 
-  background-color: lightblue;
+#screen3 {
+  width: 100%;
+  height: 100%;
 }
