@@ -296,17 +296,47 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 }
 
 /**
- * @param {Element} elem 
+ * @typedef {'fade' | 'y-fade'} FadeType
  */
-export function iosFadeIn(elem) {
-  elem.classList.remove('ios-disappear')
-  elem.classList.add('ios-appear');
+
+/**
+ * @param {FadeType} mode 
+ */
+function getFadeClass(mode) {
+  let appearClassName = '', disappearClassName = '';
+
+  switch(mode) {
+    case "fade":
+      appearClassName = "ios-appear";
+      disappearClassName = "ios-disappear";
+      break;
+    case "y-fade":
+      appearClassName = "ios-y-appear";
+      disappearClassName = "ios-y-disappear";
+      break;
+  }
+
+  return [appearClassName, disappearClassName];
 }
 
 /**
  * @param {Element} elem 
+ * @param {FadeType} [mode]
  */
-export function iosFadeOut(elem) {
-  elem.classList.remove('ios-appear');
-  elem.classList.add('ios-disappear')
+export function iosFadeIn(elem, mode = 'fade') {
+  const [a, d] = getFadeClass(mode);
+  
+  elem.classList.remove(d)
+  elem.classList.add(a);
+}
+
+/**
+ * @param {Element} elem 
+ * @param {FadeType} [mode]
+ */
+export function iosFadeOut(elem, mode = 'fade') {
+  const [a, d] = getFadeClass(mode);
+
+  elem.classList.remove(a);
+  elem.classList.add(d);
 }

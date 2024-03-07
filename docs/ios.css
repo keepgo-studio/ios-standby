@@ -42,7 +42,7 @@
   display: flex;
   width: fit-content;
   height: fit-content;
-  gap: 0.5vw;
+  gap: 0.6vw;
 }
 .ios-switch--list-ul.hor {
   top: 96%;
@@ -57,8 +57,8 @@
 }
 .ios-switch--list-ul > li {
   display: block;
-  width: 0.6vw;
-  height: 0.6vw;
+  width: 0.8vw;
+  height: 0.8vw;
   background-color: #5c5c5c;
   border-radius: 999px;
 }
@@ -75,4 +75,100 @@
 .ios-appear {
   opacity: 1 !important;
   transition: opacity ease-out var(--ios-duration) !important;
+}
+.ios-y-disappear {
+  transform: translateY(3%);
+  opacity: 0 !important;
+  transition: ease-out var(--ios-duration) !important;
+  pointer-events: none !important;
+}
+.ios-y-appear {
+  transform: translateY(0);
+  opacity: 1 !important;
+  transition: ease-out var(--ios-duration) !important;
+}
+
+
+.ios-timer--canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.ios-timer--text1 {
+  --default-color: #7aaaf1;
+
+
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 25%;
+}
+.ios-timer--text-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -0.02em;
+  font-size: clamp(60px, 38vw, 500px);
+  font-family: "Timer Font";
+  color: var(--default-color);  
+  overflow: hidden;
+}
+.ios-timer--text-container > div {
+  position: relative;
+  height: 100%;
+}
+.ios-timer--text-container > div::before,
+.ios-timer--text-container > div::after {
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 50%;
+  border-radius: 9999px;
+  content: "";
+  min-width: min(5vw, 75px);
+  min-height: min(5vw, 75px);
+  background-color: var(--default-color);
+}
+.ios-timer--text-container > div::before {
+  transform: translate(-50%, calc(-50% + 0.2em));
+}
+.ios-timer--text-container > div::after {
+  transform: translate(-50%, calc(-50% - 0.2em));
+}
+.ios-timer--text-container .hour, 
+.ios-timer--text-container .minute {
+  display: flex;
+  position: relative;
+  top: -0.02em;
+  transform: scale(0.8, 1.1);
+}
+.ios-timer--text-container .hour span, 
+.ios-timer--text-container .minute span {
+  max-width: .48em;
+  min-width: .48em;
+}
+.ios-timer--date-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5vw 0;
+}
+.ios-timer--date-container .date-temp {
+  color: #fff;
+  font-size: min(4vw, 42px);
+}
+
+.ios-timer--date-container .date-temp span {
+  color: var(--default-color);
 }

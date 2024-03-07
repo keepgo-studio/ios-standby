@@ -22,6 +22,7 @@ export default class Component extends HTMLElement {
  * @typedef {import('../service/weather/weather.js').WeatherEventType} WeatherEventType;
  * @typedef {import("../service/geo/geo.js").GeoEventType} GeoEventType
  * @typedef {import("../service/internet/internet.js").InternetEventType} InternetEventType
+ * @typedef {import("../service/timer/timer.js").TimerEventType} TimerEventType
  */
 export class SubscribeComponent extends Component {
   /** 
@@ -34,7 +35,7 @@ export class SubscribeComponent extends Component {
 
   /**
    * 
-   * @param {GeoEventType | WeatherEventType | InternetEventType} eventName 
+   * @param {GeoEventType | WeatherEventType | InternetEventType | TimerEventType} eventName 
    * @param {(e: CustomEvent) => void} callback 
    */
   addSubscribeHandler(eventName, callback) {

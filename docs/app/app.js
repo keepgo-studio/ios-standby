@@ -11,12 +11,19 @@ class Screen3 extends Component {
     this.innerHTML = `
       <section id="screen3">
         <app-timer-rect></app-timer-rect>
+        <app-timer-text1></app-timer-text1>
       </section>
     `;
   }
 
   afterMount() {
+    const screen3 = /** @type {HTMLElement} */ (this.querySelector("#screen3"));
 
+    addSwitchAnimation(screen3, 'vertical', {
+      listUi: true,
+      SCALE_INIT: 0.8,
+      OPACITY_INIT: 0
+    });
   }
 }
 
@@ -46,9 +53,9 @@ class App extends Component {
   render() {
     this.innerHTML = `
       <div id="app">
-        <app-screen3></app-screen3>
         <app-screen1></app-screen1>
         <app-screen2></app-screen2>
+        <app-screen3></app-screen3>
       </div>
     `;
   }

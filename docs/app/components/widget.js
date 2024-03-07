@@ -138,13 +138,14 @@ class Online extends SubscribeComponent {
 
     this.addSubscribeHandler("internet/update", async (e) => {
       const isOnline = e.detail;
-      
-      root.classList.remove(isOnline ? 'off' : 'on');
-      root.classList.add(isOnline ? 'on' : 'off');
 
       iosFadeOut(background);
       iosFadeOut(svgWrapperElem);
       iosFadeOut(svgTextElem);
+
+      await delay();
+      root.classList.remove(isOnline ? 'off' : 'on');
+      root.classList.add(isOnline ? 'on' : 'off');
 
       await delay(100);
       iosFadeIn(background);

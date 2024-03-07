@@ -1,33 +1,85 @@
 // @ts-check
 
-import { minMax, range } from "../../../utils.js";
-import Component from "../../core/component.js";
+import { delay, minMax, range } from "../../../utils.js";
+import { iosFadeIn, iosFadeOut } from "../../core/animation.js";
+import Component, { SubscribeComponent } from "../../core/component.js";
+import { Weather } from "../weather/weather.js";
 import { Timer } from "./timer.js";
 
-class TimerUiTextClock {
 
-}
-class TimerUiRectClock extends Component {
+class TimerCoreComponent extends Component {
+  /** @protected */
   _lifeCycle = true;
-  /** @type {CanvasRenderingContext2D} */
+  /** @protected @type {HTMLElement} */
+  _root;
+  /** @protected @type {HTMLCanvasElement} */
+  _canvas;
+  /** @protected @type {CanvasRenderingContext2D} */
   _ctx;
-  /** @type {number} */
-  _cWidth;
-  /** @type {number} */
-  _cHeight;
-  /** @type {number} */
-  _radius;
+  /** @private */
+  _className = "ios-timer--canvas-container";
 
-  _heightMax;
-  _widthMax;
+  /** @private */
+  _ref() {
+    this._root = /** @type {HTMLCanvasElement} */ (this.querySelector(`.${this._className}`));
+    this._canvas = /** @type {HTMLCanvasElement} */ (this.querySelector(`.${this._className} canvas`));
+    this._ctx = /** @type {any} */ (this._canvas.getContext('2d'));
+  }
+
+  draw() {}
+
+  setStates() {}
+
+  animation() {
+    if (this._lifeCycle) this.draw();
+
+    requestAnimationFrame(this.animation.bind(this));
+  }
+
+  subscribeViewport() {
+    const io = new IntersectionObserver((entries) => {
+      this._lifeCycle = entries[0].isIntersecting;
+    }, {
+      threshold: 0.5
+    })
+
+    io.observe(this);
+  }
+
+  afterMount() {
+    this._ref();
+
+    this.setStates();
+    
+    this.subscribeViewport();
+    
+    this.draw();
+    requestAnimationFrame(this.animation.bind(this));
+  }
 
   render() {
     this.innerHTML = `
-      <section id="rect-clock">
+      <section class="${this._className}">
         <canvas></canvas>
       </section>
     `;
   }
+}
+
+class TimerUiRectClock extends TimerCoreComponent {
+  /** @private @type {number} */
+  _cWidth;
+  /** @private @type {number} */
+  _cHeight;
+  /** @private @type {number} */
+  _radius;
+
+  /** @private @type {number} */
+  _heightMax;
+  /** @private @type {number} */
+  _widthMax;
+
+
 
   // https://codepen.io/sylaryip/pen/zYZxxyv?editors=1010
   draw() {
@@ -234,53 +286,26 @@ class TimerUiRectClock extends Component {
     this._ctx.fill();
   }
 
-  animation() {
-    if (this._lifeCycle) this.draw();
-
-    requestAnimationFrame(this.animation.bind(this));
-  }
-
-  afterMount() {
-    const root = /** @type {HTMLCanvasElement} */ (this.querySelector("#rect-clock"));
-    const canvas = /** @type {HTMLCanvasElement} */ (this.querySelector("#rect-clock canvas"));
-    const ctx = /** @type {any} */ (canvas.getContext('2d'));
-
-    canvas.width = root.offsetWidth;
-    canvas.height = root.offsetHeight;
-    this._cWidth = root.offsetWidth;
-    this._cHeight = root.offsetHeight;
+  setStates() {
+    this._canvas.width = this._root.offsetWidth;
+    this._canvas.height = this._root.offsetHeight;
+    this._cWidth = this._root.offsetWidth;
+    this._cHeight = this._root.offsetHeight;
 
     this._radius = this._cHeight / 2 - 32;
-    this._ctx = ctx;
     
     this._heightMax = this._cHeight / 2 * 0.85;
     this._widthMax = this._cWidth / 2 * 0.9;
-
-    this.draw();
-
-    // [ ] 최적회: 보일 때만 시계가 작동하게
-    requestAnimationFrame(this.animation.bind(this));
   }
 }
 
-class TimerUiCircleClock extends Component {
-  _lifeCycle = true;
-  /** @type {CanvasRenderingContext2D} */
-  _ctx;
+class TimerUiCircleClock extends TimerCoreComponent {
   /** @type {number} */
   _cWidth;
   /** @type {number} */
   _cHeight;
   /** @type {number} */
   _radius;
-
-  render() {
-    this.innerHTML = `
-      <section id="circle-clock">
-        <canvas></canvas>
-      </section>
-    `;
-  }
 
   // https://codepen.io/sylaryip/pen/zYZxxyv?editors=1010
   draw() {
@@ -445,34 +470,122 @@ class TimerUiCircleClock extends Component {
     this._ctx.fill();
   }
 
-  animation() {
-    if (this._lifeCycle) this.draw();
+  setStates() {
+    const w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
 
-    requestAnimationFrame(this.animation.bind(this));
-  }
-
-  afterMount() {
-    const root = /** @type {HTMLCanvasElement} */ (this.querySelector("#circle-clock"));
-    const canvas = /** @type {HTMLCanvasElement} */ (this.querySelector("#circle-clock canvas"));
-    const ctx = /** @type {any} */ (canvas.getContext('2d'));
-    
-    const w = Math.min(root.offsetWidth, root.offsetHeight);
-
-    canvas.width = w;
-    canvas.height = w;
+    this._canvas.width = w;
+    this._canvas.height = w;
     this._cWidth = w;
     this._cHeight = w;
 
     this._radius = this._cWidth / 2 - 32;
-    this._ctx = ctx;
-    
-    this.draw();
+  }
+}
 
-    // [ ] 최적회: 보일 때만 시계가 작동하게
-    requestAnimationFrame(this.animation.bind(this));
+class TimerUiText1 extends SubscribeComponent {
+  render() {
+    this.innerHTML = `
+      <div class="ios-timer--text1">
+        <div class="ios-timer--text-container">
+          <p class="hour">
+            <span></span>
+            <span></span>
+          </p>
+          
+          <div></div>
+
+          <p class="minute">
+            <span></span>
+            <span></span>
+          </p>
+        </div>
+
+        <div class="ios-timer--date-container">
+          <div class="date-temp">
+            <p class="date"></p>
+            <p class="temp"></p>
+          </div>
+
+          <div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  afterMount() {
+    const timeElems = [
+      /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .hour span:nth-child(1)")),
+      /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .hour span:nth-child(2)")),
+      /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .minute span:nth-child(1)")),
+      /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .minute span:nth-child(2)"))
+    ];
+
+    const dateElem = /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .ios-timer--date-container .date-temp .date"));
+    const tempElem = /** @type {HTMLElement} */ (this.querySelector(".ios-timer--text1 .ios-timer--date-container .date-temp .temp"));
+
+    /**
+     * @param {number} num 
+     * @returns {string[]}
+     */
+    const parseTime = (num) => ("0" + num).slice(-2).split('');
+    /**
+     * @param {Date} date 
+     */
+    const draw = (date) => {
+      const textList = [
+        ...parseTime(date.getHours()),
+        ...parseTime(date.getMinutes())
+      ];
+
+      Promise.all(range(4).map(async (_, i) => {
+        const elem = timeElems[i];
+
+        if (elem.textContent === textList[i]) return;
+        
+        iosFadeOut(elem, "y-fade");
+        await delay();
+        elem.textContent = String(textList[i]);
+        iosFadeIn(elem, "y-fade");
+      }));
+
+
+      const day = date.toLocaleDateString(navigator.language, { weekday: 'long' });
+
+      dateElem.innerHTML = `
+        <p>${date.getDate()}일 (<span>${day}</span>)</p>
+      `;
+    }
+
+    this.addSubscribeHandler("timer/update", async (e) => {
+      draw(e.detail);
+    });
+
+    Timer.subscribe(this);
+
+    draw(Timer.time);
+
+    /**
+     * @param {number | null} t 
+     */
+    const renderTemp = async (t) => {
+      iosFadeOut(tempElem);
+      await delay();
+      tempElem.textContent = `${t ? Math.round(t) : "--"}°C`;
+      iosFadeIn(tempElem);
+    }
+
+    this.addSubscribeHandler("weather/update",(e) => {
+      renderTemp(e.detail.main.temp);
+    });
+
+    Weather.subscribe(this);
+
+    renderTemp(null);
   }
 }
 
 customElements.define('app-timer-rect', TimerUiRectClock);
 
 customElements.define('app-timer-circle', TimerUiCircleClock);
+
+customElements.define('app-timer-text1', TimerUiText1);
