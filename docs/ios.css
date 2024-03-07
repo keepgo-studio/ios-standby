@@ -28,6 +28,43 @@
   max-width: 100% !important;
   display: block !important;
 }
+.ios-switch--list-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0;
+}
+.ios-switch--list-ul {
+  position: sticky;
+  display: flex;
+  width: fit-content;
+  height: fit-content;
+  gap: 0.5vw;
+}
+.ios-switch--list-ul.hor {
+  top: 96%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.ios-switch--list-ul.ver {
+  top: 50%;
+  left: 96%;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+.ios-switch--list-ul > li {
+  display: block;
+  width: 0.6vw;
+  height: 0.6vw;
+  background-color: #5c5c5c;
+  border-radius: 999px;
+}
+.ios-switch--list-ul > li.select {
+  background-color: #fff;
+}
 
 
 .ios-disappear {

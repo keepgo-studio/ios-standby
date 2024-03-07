@@ -193,7 +193,9 @@ class Widget extends Component {
     const container = /** @type {HTMLElement} */ (this.querySelector("#widget > .container"));
 
     addSwitchAnimation(container, 'vertical', {
-      SCALE_INIT: 0.6
+      SCALE_INIT: 0.8,
+      OPACITY_INIT: 0,
+      listUi: true
     });
   }
 }

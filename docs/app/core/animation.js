@@ -1,6 +1,6 @@
 // @ts-check
 
-import { isMobile, minMax } from "../../utils.js";
+import { isMobile, minMax, range } from "../../utils.js";
 
 class Ease {
   static easeOutExpo = (/** @type {number} */ x) => { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
@@ -52,11 +52,15 @@ class MouseCoor {
  * @param {HTMLElement} root 
  * @param {'horizontal' | 'vertical'} direction
  * @param {{
- *    SCALE_INIT?: number;
- *    OPACITY_INIT?: number;
+ *    SCALE_INIT: number;
+ *    OPACITY_INIT: number;
+ *    listUi: boolean;
  * }} [initObj]
  */
-export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6 }) {
+export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false }) {
+  const listContainer = document.createElement('div');
+  const listUl = document.createElement('ul');
+
   root.classList.add("ios-switch--container");
   
   [...root.children].forEach((elem) => elem.classList.add("ios-switch--item"));
@@ -82,6 +86,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     root.style.flexDirection = 'column';
   }
 
+
 // Global Variable setting
   /**
    * 
@@ -97,6 +102,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   const THRESHOLD = LENGTH / 2.5;
   TOTAL_LENGTH = LENGTH * N;
 // ---------------------------------------------------------------
+
 
   /**
    * @param {number} dest
@@ -120,7 +126,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
       root[SCROLL_REF] = (easedT * (dest - from)) + from;
 
       if (time < 1) requestAnimationFrame(scroll);
-      // else -> callback
+      // else
     }
 
     requestAnimationFrame(scroll);
@@ -134,6 +140,13 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
       idx = minMax(idx + d, 0, N - 1);
     }
   }
+
+  function renderList() {
+    [...listUl.children].forEach((elem, _idx) => {
+      if (idx === _idx) elem.classList.add("select");
+      else elem.classList.remove("select");
+    })
+  }
 // ---------------------------------------------------------------
 
 // event handler for PC
@@ -142,6 +155,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     root.addEventListener('mousedown', (e) => {
       lifeCycle = false;
       COOR.setIsClickingOn(e.x, e.y);
+      iosFadeIn(listContainer);
     });
 
     // while moving
@@ -156,26 +170,24 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     });
 
     // moving stop
-    root.addEventListener('mouseup', (e) => {
+    
+    /** @param {MouseEvent} e */
+    const handler = (e) => {
       lifeCycle = true;
 
       COOR.update(e.x, e.y, () => {
         updateIdx();
+        renderList();
         moveTo(getScrollPositionByIdx(idx), 1000);
       });
 
       COOR.setIsClickingOff();
-    });
-    root.addEventListener('mouseleave', (e) => {
-      lifeCycle = true;
+      iosFadeOut(listContainer);
+    };
 
-      COOR.update(e.x, e.y, () => {
-        updateIdx();
-        moveTo(getScrollPositionByIdx(idx), 1000);
-      });
+    root.addEventListener('mouseup', handler);
+    root.addEventListener('mouseleave', handler);
 
-      COOR.setIsClickingOff();
-    });
   }
 // ---------------------------------------------------------------
 // event handler for MOBILE
@@ -239,8 +251,8 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   }
 
   requestAnimationFrame(renderChild);
-
 // ---------------------------------------------------------------
+
 
   /**
    * add dummy div for spring like scroll animation
@@ -257,6 +269,30 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   setTimeout(() => {
     root[SCROLL_REF] = getScrollPositionByIdx(0);
   });
+// ---------------------------------------------------------------
+
+
+  listContainer.className = 'ios-switch--list-container';
+  if (direction === 'horizontal') {
+    listContainer.style.width = `${TOTAL_LENGTH + LENGTH}px`;
+  } else {
+    listContainer.style.height = `${TOTAL_LENGTH + LENGTH}px`;
+  }
+
+  listUl.className = 'ios-switch--list-ul';
+  listUl.classList.add(direction === 'horizontal' ? 'hor' : 'ver');
+  listUl.innerHTML = range(N).map(() => `<li></li>`).join('\n');
+
+  listContainer.append(listUl);
+
+  if (initObj.listUi) {
+    root.appendChild(listContainer);
+    renderList();
+  } else {
+    listContainer.remove();
+  }
+
+// ---------------------------------------------------------------
 }
 
 /**
