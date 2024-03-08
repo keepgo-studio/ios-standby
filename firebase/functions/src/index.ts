@@ -13,7 +13,7 @@ const middlewareSetCORS = (handler: Function) => async (req: Functions.https.Req
     "http://127.0.0.1:5500",
     "http://localhost:5500",
   ] : [
-    "https://keepgo-studio.github.io/ios-standby"
+    "https://keepgo-studio.github.io"
   ];
 
   if (!req.headers.origin) {
