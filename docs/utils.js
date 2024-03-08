@@ -6,10 +6,12 @@ export function isMobile() {
   return Boolean(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 }
 
+// [x] generic type써서 tpye checking 강화하기
 /**
- * 
+ * @template T
  * @param {number} n 
- * @param {any} [val] 
+ * @param {T} [val] 
+ * @returns {T[]}
  */
 export function range(n, val = undefined) {
   return Array(n).fill(val);
