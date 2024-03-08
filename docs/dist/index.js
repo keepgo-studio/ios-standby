@@ -447,28 +447,33 @@
     if (direction === "horizontal") {
       GLength = root2.offsetWidth;
       GScrollRef = "scrollLeft";
-      root2.style.overflowX = isMobile() ? "auto" : "hidden";
+      root2.style.overflowX = isMobile() ? "hidden" : "hidden";
       root2.style.overflowY = "hidden";
       root2.style.flexWrap = "nowrap";
     } else {
       GLength = root2.offsetHeight;
       GScrollRef = "scrollTop";
       root2.style.overflowX = "hidden";
-      root2.style.overflowY = isMobile() ? "auto" : "hidden";
+      root2.style.overflowY = isMobile() ? "hidden" : "hidden";
       root2.style.flexDirection = "column";
     }
+    const SPRING_RATIO = 0.3;
     function getScrollPositionByIdx(_idx) {
       if (initObj.infinite) {
         return GLength * _idx;
       }
       if (_idx === 0)
         return 0;
-      return (0.5 + _idx - 1) * GLength;
+      return (SPRING_RATIO + _idx - 1) * GLength;
     }
     if (!initObj.infinite) {
       const div1 = document.createElement("div"), div2 = document.createElement("div");
       div1.className = "ios-switch--dummy";
+      div1.style.width = SPRING_RATIO * GLength + "px";
+      div1.style.height = SPRING_RATIO * GLength + "px";
       div2.className = "ios-switch--dummy";
+      div2.style.width = SPRING_RATIO * GLength + "px";
+      div2.style.height = SPRING_RATIO * GLength + "px";
       root2.insertBefore(div1, root2.firstChild);
       root2.appendChild(div2);
     } else {
@@ -495,12 +500,13 @@
     const GCoor = new MouseCoor();
     const GScrollEndCallbackList = [];
     const GChildrenIdxMap = [...root2.children].reduce((prev, curr, i) => prev.set(curr, i), /* @__PURE__ */ new Map());
-    GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 2);
+    GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
     const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
-      if (info.isIntersecting)
-        GIdx = GChildrenIdxMap.get(info.target);
+      const i = GChildrenIdxMap.get(info.target);
+      if (i !== GIdx && info.isIntersecting)
+        GIdx = i;
     }), {
-      threshold: 0.55
+      threshold: isMobile() ? 0.1 : 0.4
     });
     GChildrenIdxMap.forEach((i, elem) => {
       if (!initObj.infinite && (i === 0 || i === N - 1))
@@ -521,19 +527,36 @@
       }
       requestAnimationFrame(scroll);
     }
+    let GMoveStart = false;
+    function getAngleType(dx, dy) {
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      if (angle > -45 && angle <= 45) {
+        return "horizontal";
+      } else if (angle > 45 && angle <= 135) {
+        return "vertical";
+      } else if (angle > 135 || angle <= -135) {
+        return "horizontal";
+      }
+      return "vertical";
+    }
     if (!isMobile()) {
       root2.addEventListener("mousedown", (e) => {
         GLifeCycle = false;
         GCoor.setIsClickingOn(e.x, e.y);
       });
       root2.addEventListener("mousemove", (e) => {
+        if (GMoveStart)
+          e.stopPropagation();
         GCoor.update(e.x, e.y, () => {
-          const from = root2[GScrollRef];
-          const movement = e[`movement${direction === "horizontal" ? "X" : "Y"}`];
-          root2[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
+          const from = root2[GScrollRef], cd = getAngleType(e.movementX, e.movementY), movement = e[`movement${direction === "horizontal" ? "X" : "Y"}`];
+          if (cd === direction) {
+            GMoveStart = true;
+            root2[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
+          }
         });
       });
       const handler = (e) => {
+        GMoveStart = false;
         GLifeCycle = true;
         GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1e3));
         GCoor.setIsClickingOff();
@@ -541,6 +564,32 @@
       root2.addEventListener("mouseup", handler);
       root2.addEventListener("mouseleave", handler);
     } else {
+      root2.addEventListener("touchstart", (e) => {
+        const x = e.touches[0].clientX, y = e.touches[0].clientY;
+        GLifeCycle = false;
+        GCoor.setIsClickingOn(x, y);
+      });
+      root2.addEventListener("touchmove", (e) => {
+        if (GMoveStart)
+          e.stopPropagation();
+        const x = e.touches[0].clientX, y = e.touches[0].clientY;
+        GCoor.update(x, y, () => {
+          const from = root2[GScrollRef];
+          const dx = GCoor.x2 - GCoor.x1, dy = GCoor.y2 - GCoor.y1, cd = getAngleType(dx, dy);
+          let dis = direction === "horizontal" ? dx : dy;
+          if (direction === cd) {
+            GMoveStart = true;
+            root2[GScrollRef] = minMax(from + -dis, 0, GTotalLength);
+          }
+          GCoor.setIsClickingOn(x, y);
+        });
+      });
+      root2.addEventListener("touchend", () => {
+        GMoveStart = false;
+        GLifeCycle = true;
+        moveTo(getScrollPositionByIdx(GIdx), 1e3);
+        GCoor.setIsClickingOff();
+      });
     }
     const { OPACITY_INIT, SCALE_INIT } = initObj;
     const showingMap = /* @__PURE__ */ new Map();
@@ -828,7 +877,7 @@
     }
     drawHourNums() {
       const fontSize = this._cWidth / 16;
-      this._ctx.font = `600 ${fontSize}px "sans-serif"`;
+      this._ctx.font = `600 ${fontSize}px "SF Pro Display"`;
       this._ctx.textAlign = "center";
       this._ctx.textBaseline = "middle";
       this._ctx.fillStyle = "#fff";
@@ -922,8 +971,17 @@
       this._ctx.fill();
     }
     setStates() {
-      this._canvas.width = this._root.offsetWidth;
-      this._canvas.height = this._root.offsetHeight;
+      const retina = window.devicePixelRatio;
+      if (retina > 1) {
+        this._canvas.width = this._root.offsetWidth * retina;
+        this._canvas.height = this._root.offsetHeight * retina;
+        this._ctx.scale(retina, retina);
+      } else {
+        this._canvas.width = this._root.offsetWidth;
+        this._canvas.height = this._root.offsetHeight;
+      }
+      this._canvas.style.width = this._root.offsetWidth + "px";
+      this._canvas.style.height = this._root.offsetHeight + "px";
       this._cWidth = this._root.offsetWidth;
       this._cHeight = this._root.offsetHeight;
       this._radius = this._cHeight / 2 - 32;
@@ -978,7 +1036,7 @@
     }
     drawHourNums() {
       const fontSize = this._cWidth / 10;
-      this._ctx.font = `${fontSize}px "sans-serif"`;
+      this._ctx.font = `${fontSize}px "SF Pro Display"`;
       this._ctx.textAlign = "center";
       this._ctx.textBaseline = "middle";
       this._ctx.fillStyle = "#fff";
@@ -1070,9 +1128,18 @@
       this._ctx.fill();
     }
     setStates() {
-      const w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
-      this._canvas.width = w;
-      this._canvas.height = w;
+      let w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
+      const retina = window.devicePixelRatio;
+      if (retina > 1) {
+        this._canvas.width = w * retina;
+        this._canvas.height = w * retina;
+        this._ctx.scale(retina, retina);
+      } else {
+        this._canvas.width = w;
+        this._canvas.height = w;
+      }
+      this._canvas.style.width = w + "px";
+      this._canvas.style.height = w + "px";
       this._cWidth = w;
       this._cHeight = w;
       this._radius = this._cWidth / 2 - 32;
