@@ -69,7 +69,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     GLength = root.offsetWidth;
     GScrollRef = 'scrollLeft';
 
-    root.style.overflowX = isMobile() ? 'auto' : 'hidden';
+    root.style.overflowX = isMobile() ? 'hidden' : 'hidden';
     root.style.overflowY = 'hidden';
     root.style.flexWrap = 'nowrap';
   } else {
@@ -77,14 +77,14 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     GScrollRef = 'scrollTop';
 
     root.style.overflowX = 'hidden';
-    root.style.overflowY = isMobile() ? 'auto' : 'hidden';
+    root.style.overflowY = isMobile() ? 'hidden' : 'hidden';
     root.style.flexDirection = 'column';
   }
 
 
 // setting Environment and Global Variable
+  const SPRING_RATIO = 0.3;
   /**
-   * @description 0.5 is for spring scrolling
    * @param {number} _idx 
    * @returns {number}
    */
@@ -94,7 +94,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     }
 
     if (_idx === 0) return 0;
-    return (0.5 + _idx - 1) * GLength;
+    return (SPRING_RATIO + _idx - 1) * GLength;
   }
 
   if(!initObj.infinite) {
@@ -103,9 +103,15 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
      * check the idx range from {@link updateIdx}
      */
     const div1 = document.createElement('div'),
-    div2 = document.createElement('div');
+          div2 = document.createElement('div');
+
     div1.className = 'ios-switch--dummy';
+    div1.style.width = SPRING_RATIO * GLength + "px";
+    div1.style.height = SPRING_RATIO * GLength + "px";
+    
     div2.className = 'ios-switch--dummy';
+    div2.style.width = SPRING_RATIO * GLength + "px";
+    div2.style.height = SPRING_RATIO * GLength + "px";
 
     root.insertBefore(div1, root.firstChild);
     root.appendChild(div2);
@@ -134,13 +140,14 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   const GScrollEndCallbackList = [];
   const GChildrenIdxMap = [...root.children].reduce((prev, curr, i) => prev.set(curr, i), new Map());
   
-  GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 2);
+  GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
 
 // ---------------------------------------------------------------
   const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
-    if (info.isIntersecting) GIdx = GChildrenIdxMap.get(info.target);
+    const i = GChildrenIdxMap.get(info.target);
+    if (i !== GIdx && info.isIntersecting) GIdx = i;
   }), {
-    threshold: 0.55
+    threshold: isMobile() ? 0.1 : 0.4
   });
 
   GChildrenIdxMap.forEach((i, elem) => {
@@ -163,7 +170,6 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 
     function scroll() {
       if (!GLifeCycle) return;
-
       const currentTime = Date.now(),
         time = Math.min(1, ((currentTime - start) / duration)),
         easedT = Ease.easeOutExpo(time);
@@ -177,17 +183,29 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     requestAnimationFrame(scroll);
   }
 
-  // function updateIdx() {
-  //   const dist = direction === 'horizontal' ? (GCoor.x2 - GCoor.x1) : (GCoor.y2 - GCoor.y1);
-
-  //   if (GThresold <= Math.abs(dist)) {
-  //     const d = dist > 0 ? -1 : 1;
-  //     GIdx = minMax(GIdx + d, MIN_IDX, MAX_IDX);
-  //   }
-  // }
 // ---------------------------------------------------------------
 
 // event handler for PC
+  let GMoveStart = false;
+
+  /**
+   * @param {number} dx 
+   * @param {number} dy 
+   * @return {'horizontal' | 'vertical'}
+   */
+  function getAngleType (dx, dy) {
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+
+    if (angle > -45 && angle <= 45) {
+      return 'horizontal';
+    } else if (angle > 45 && angle <= 135) {
+      return 'vertical';
+    } else if (angle > 135 || angle <= -135) {
+      return 'horizontal';
+    }
+    return 'vertical';
+  }
+
   if (!isMobile()) {
     // moving start
     root.addEventListener('mousedown', (e) => {
@@ -197,11 +215,17 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 
     // while moving
     root.addEventListener('mousemove', (e) => {
-      GCoor.update(e.x, e.y, () => {
-        const from = root[GScrollRef];
-        const movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`];
+      if (GMoveStart) e.stopPropagation();
 
-        root[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
+      GCoor.update(e.x, e.y, () => {
+        const from = root[GScrollRef],
+              cd = getAngleType(e.movementX, e.movementY),
+              movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`];
+
+        if (cd === direction) {
+          GMoveStart = true;
+          root[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
+        }
       });
     });
 
@@ -209,10 +233,10 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     
     /** @param {MouseEvent} e */
     const handler = (e) => {
+      GMoveStart = false;
       GLifeCycle = true;
 
       GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1000));
-
       GCoor.setIsClickingOff();
     };
 
@@ -222,33 +246,44 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 // ---------------------------------------------------------------
 // event handler for MOBILE
   else {
-    // root.addEventListener('touchstart', (e) => {
-    //   if (!bubble) e.stopPropagation();
+    root.addEventListener('touchstart', (e) => {
+      const x = e.touches[0].clientX,
+            y = e.touches[0].clientY;
 
-    //   const x = e.touches[0].clientX,
-    //         y = e.touches[0].clientY;
+      GLifeCycle = false;
+      GCoor.setIsClickingOn(x, y);
+    });
 
-    //   lifeCycle = false;
-    //   COOR.setIsClickingOn(x, y);
-    // })
+    root.addEventListener("touchmove", (e) => {
+      if (GMoveStart) e.stopPropagation();
 
-    // root.addEventListener('touchmove', (e) => {
-    //   if (!bubble) e.stopPropagation();
+      const x = e.touches[0].clientX,
+            y = e.touches[0].clientY;
 
-    //   const x = e.touches[0].clientX,
-    //         y = e.touches[0].clientY;
+      GCoor.update(x, y, () => {
+        const from = root[GScrollRef];
+        const dx = GCoor.x2 - GCoor.x1, 
+              dy = GCoor.y2 - GCoor.y1,
+              cd = getAngleType(dx, dy);
 
-    //   COOR.update(x, y);
-    // })
-    // root.addEventListener('touchend', (e) => {
-    //   if (!bubble) e.stopPropagation();
+        let dis = direction === 'horizontal' ? dx : dy;
 
-    //   lifeCycle = true;
-    //   updateIdx();
-    //   moveTo(LENGTH * idx, 1000);
+        if (direction === cd) {
+          GMoveStart = true;
+          root[GScrollRef] = minMax(from + -dis, 0, GTotalLength);
+        }
 
-    //   COOR.setIsClickingOff();
-    // })
+        GCoor.setIsClickingOn(x, y);
+      });
+    })
+
+    root.addEventListener('touchend', () => {
+      GMoveStart = false;
+      GLifeCycle = true;
+
+      moveTo(getScrollPositionByIdx(GIdx), 1000);
+      GCoor.setIsClickingOff();
+    });
   }
 // ---------------------------------------------------------------
 

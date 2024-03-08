@@ -17,8 +17,6 @@
   width: 100% !important;
 }
 .ios-switch--dummy {
-  width: 50% !important;
-  height: 50% !important;
   flex-shrink: 0 !important;
 }
 .ios-switch--container > .ios-switch--item:not(.ios-switch--dummy) {

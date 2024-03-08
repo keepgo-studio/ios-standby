@@ -6,7 +6,7 @@ export function isMobile() {
   return Boolean(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 }
 
-// [x] generic type써서 tpye checking 강화하기
+
 /**
  * @template T
  * @param {number} n 

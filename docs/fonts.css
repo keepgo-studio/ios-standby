@@ -3,3 +3,9 @@
   src: url("./static/fonts/Oswald-Medium.ttf") format("truetype");
   font-weight: normal;
 }
+
+@font-face { 
+  font-family: "SF Pro Display";
+  src: url("./static/fonts/SF-Pro-Display-Medium.otf") format("truetype");
+  font-weight: normal;
+}

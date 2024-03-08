@@ -175,7 +175,7 @@ class TimerUiRectClock extends TimerCoreComponent {
 
   drawHourNums() {
     const fontSize = this._cWidth / 16;
-    this._ctx.font = `600 ${fontSize}px "sans-serif"`;
+    this._ctx.font = `600 ${fontSize}px "SF Pro Display"`;
     this._ctx.textAlign = "center";
     this._ctx.textBaseline = "middle";
     this._ctx.fillStyle = "#fff";
@@ -291,8 +291,20 @@ class TimerUiRectClock extends TimerCoreComponent {
   }
 
   setStates() {
-    this._canvas.width = this._root.offsetWidth;
-    this._canvas.height = this._root.offsetHeight;
+    const retina = window.devicePixelRatio;
+
+    if (retina > 1) {
+      this._canvas.width = this._root.offsetWidth * retina;
+      this._canvas.height = this._root.offsetHeight * retina;
+      this._ctx.scale(retina, retina);
+    } else {
+      this._canvas.width = this._root.offsetWidth;
+      this._canvas.height = this._root.offsetHeight;
+    }
+
+    this._canvas.style.width = this._root.offsetWidth + "px";
+    this._canvas.style.height = this._root.offsetHeight + "px";
+
     this._cWidth = this._root.offsetWidth;
     this._cHeight = this._root.offsetHeight;
 
@@ -363,7 +375,7 @@ class TimerUiCircleClock extends TimerCoreComponent {
 
   drawHourNums() {
     const fontSize = this._cWidth / 10;
-    this._ctx.font = `${fontSize}px "sans-serif"`;
+    this._ctx.font = `${fontSize}px "SF Pro Display"`;
     this._ctx.textAlign = "center";
     this._ctx.textBaseline = "middle";
     this._ctx.fillStyle = "#fff";
@@ -475,10 +487,22 @@ class TimerUiCircleClock extends TimerCoreComponent {
   }
 
   setStates() {
-    const w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
+    let w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
 
-    this._canvas.width = w;
-    this._canvas.height = w;
+    const retina = window.devicePixelRatio;
+
+    if (retina > 1) {
+      this._canvas.width = w * retina;
+      this._canvas.height = w * retina;
+      this._ctx.scale(retina, retina);
+    } else {
+      this._canvas.width = w;
+      this._canvas.height = w;
+    }
+
+    this._canvas.style.width = w + "px";
+    this._canvas.style.height = w + "px";
+
     this._cWidth = w;
     this._cHeight = w;
 
