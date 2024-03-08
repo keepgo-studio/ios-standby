@@ -30,15 +30,21 @@ class TimerCoreComponent extends Component {
 
   setStates() {}
 
-  animation() {
-    if (this._lifeCycle) this.draw();
 
+  animation() {
+    if (!this._lifeCycle) return;
+
+    this.draw();
     requestAnimationFrame(this.animation.bind(this));
   }
 
   subscribeViewport() {
     const io = new IntersectionObserver((entries) => {
       this._lifeCycle = entries[0].isIntersecting;
+
+      if (entries[0].isIntersecting) {
+        requestAnimationFrame(this.animation.bind(this));
+      }
     }, {
       threshold: 0.5
     })
@@ -52,8 +58,7 @@ class TimerCoreComponent extends Component {
     this.setStates();
     
     this.subscribeViewport();
-    
-    this.draw();
+
     requestAnimationFrame(this.animation.bind(this));
   }
 
@@ -65,7 +70,6 @@ class TimerCoreComponent extends Component {
     `;
   }
 }
-
 class TimerUiRectClock extends TimerCoreComponent {
   /** @private @type {number} */
   _cWidth;
@@ -129,7 +133,7 @@ class TimerUiRectClock extends TimerCoreComponent {
 
         if (idx % 5 === 0) {
           this._ctx.strokeStyle = '#bbb';
-          this._ctx.lineWidth = minMax(this._cHeight / 100, 4, 8);
+          this._ctx.lineWidth = minMax(this._cHeight / 100, 2, 8);
           addStart = this._heightMax / 2.5;
         } else {
           this._ctx.strokeStyle = '#5c5c5c';
@@ -154,7 +158,7 @@ class TimerUiRectClock extends TimerCoreComponent {
         const start = degree % 180 === 0 ? this._widthMax : this._heightMax;
         const addStrat = degree % 180 === 0 ? this._widthMax / 6 : 0;
         this._ctx.strokeStyle = '#bbb';
-        this._ctx.lineWidth = minMax(this._cHeight / 100, 4, 8);
+        this._ctx.lineWidth = minMax(this._cHeight / 100, 2, 8);
 
         this._ctx.rotate(rad);
         this._ctx.beginPath();
@@ -192,12 +196,12 @@ class TimerUiRectClock extends TimerCoreComponent {
   drawCentralPointer() {
     this._ctx.beginPath();
     this._ctx.fillStyle = "#fff";
-    this._ctx.arc(0, 0, minMax(this._cHeight / 35, 10, 18), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 35, 6, 18), 0, 2 * Math.PI);
     this._ctx.fill();
 
     this._ctx.beginPath();
     this._ctx.fillStyle = "#F79A09";
-    this._ctx.arc(0, 0, minMax(this._cHeight / 50, 6, 14), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 60, 2, 14), 0, 2 * Math.PI);
     this._ctx.fill();
   }
 
@@ -215,14 +219,14 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.shadowBlur = 10;
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 8, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
     
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 12, 20);
-    this._ctx.moveTo(0, - this._radius / 6);
+    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.moveTo(0, - this._radius / 5);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
 
@@ -244,14 +248,14 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.beginPath();
     this._ctx.shadowColor = 'rgba(0,0,0,0.5)';
     this._ctx.shadowBlur = 10;
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 8, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius);
     this._ctx.stroke();
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 12, 20);
-    this._ctx.moveTo(0, - this._radius / 6);
+    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.moveTo(0, - this._radius / 5);
     this._ctx.lineTo(0, - this._radius);
     this._ctx.stroke();
 
@@ -276,13 +280,13 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.lineTo(0, this._radius / 6);
     this._ctx.stroke();
     this._ctx.moveTo(0, 0);
-    this._ctx.lineTo(0, - this._radius / 0.94);
+    this._ctx.lineTo(0, - (this._cHeight / 2.1));
     this._ctx.stroke();
     this._ctx.restore();
 
     this._ctx.beginPath();
     this._ctx.fillStyle = "#000";
-    this._ctx.arc(0, 0, minMax(this._cHeight / 90, 4, 8), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 120, 1, 8), 0, 2 * Math.PI);
     this._ctx.fill();
   }
 
@@ -376,12 +380,12 @@ class TimerUiCircleClock extends TimerCoreComponent {
   drawCentralPointer() {
     this._ctx.beginPath();
     this._ctx.fillStyle = "#fff";
-    this._ctx.arc(0, 0, minMax(this._cWidth / 30, 10, 18), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 35, 6, 18), 0, 2 * Math.PI);
     this._ctx.fill();
 
     this._ctx.beginPath();
     this._ctx.fillStyle = "#F79A09";
-    this._ctx.arc(0, 0, minMax(this._cWidth / 50, 6, 14), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 60, 2, 14), 0, 2 * Math.PI);
     this._ctx.fill();
   }
 
@@ -399,13 +403,13 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.shadowBlur = 10;
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cWidth / 64, 8, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
     
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cWidth / 32, 12, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
     this._ctx.moveTo(0, - this._radius / 6);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
@@ -428,13 +432,13 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.beginPath();
     this._ctx.shadowColor = 'rgba(0,0,0,0.5)';
     this._ctx.shadowBlur = 10;
-    this._ctx.lineWidth = minMax(this._cWidth / 64, 8, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.01);
     this._ctx.stroke();
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cWidth / 32, 12, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
     this._ctx.moveTo(0, - this._radius / 6);
     this._ctx.lineTo(0, - this._radius / 0.98);
     this._ctx.stroke();
@@ -460,13 +464,13 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.lineTo(0, this._radius / 6);
     this._ctx.stroke();
     this._ctx.moveTo(0, 0);
-    this._ctx.lineTo(0, - this._radius / 0.94);
+    this._ctx.lineTo(0, - this._radius * 1.07);
     this._ctx.stroke();
     this._ctx.restore();
 
     this._ctx.beginPath();
     this._ctx.fillStyle = "#000";
-    this._ctx.arc(0, 0, minMax(this._cWidth / 90, 4, 8), 0, 2 * Math.PI);
+    this._ctx.arc(0, 0, minMax(this._cHeight / 120, 1, 8), 0, 2 * Math.PI);
     this._ctx.fill();
   }
 
