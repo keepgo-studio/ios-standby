@@ -55,31 +55,26 @@ class MouseCoor {
  *    SCALE_INIT: number;
  *    OPACITY_INIT: number;
  *    listUi: boolean;
+ *    infinite: boolean;
  * }} [initObj]
  */
-export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false }) {
-  const listContainer = document.createElement('div');
-  const listUl = document.createElement('ul');
-
+export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false, infinite: false }) {
   root.classList.add("ios-switch--container");
   
   [...root.children].forEach((elem) => elem.classList.add("ios-switch--item"));
 
-  let idx = 0;
-  let lifeCycle = false;
-
-  var LENGTH, SCROLL_REF, TOTAL_LENGTH;
+  let GIdx = 1, GLifeCycle = false, GLength, GScrollRef, GTotalLength;
 
   if (direction === 'horizontal') {
-    LENGTH = root.offsetWidth;
-    SCROLL_REF = 'scrollLeft';
+    GLength = root.offsetWidth;
+    GScrollRef = 'scrollLeft';
 
     root.style.overflowX = isMobile() ? 'auto' : 'hidden';
     root.style.overflowY = 'hidden';
     root.style.flexWrap = 'nowrap';
   } else {
-    LENGTH = root.offsetHeight;
-    SCROLL_REF = 'scrollTop';
+    GLength = root.offsetHeight;
+    GScrollRef = 'scrollTop';
 
     root.style.overflowX = 'hidden';
     root.style.overflowY = isMobile() ? 'auto' : 'hidden';
@@ -87,21 +82,71 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   }
 
 
-// Global Variable setting
+// setting Environment and Global Variable
   /**
-   * 
-   * @param {number} idx 
+   * @description 0.5 is for spring scrolling
+   * @param {number} _idx 
    * @returns {number}
    */
-  function getScrollPositionByIdx(idx) {
-    return LENGTH * (idx + 0.5);
+  function getScrollPositionByIdx(_idx) {
+    if (initObj.infinite) {
+      return GLength * _idx;
+    }
+
+    if (_idx === 0) return 0;
+    return (0.5 + _idx - 1) * GLength;
+  }
+
+  if(!initObj.infinite) {
+    /**
+     * add dummy div for spring like scroll animation
+     * check the idx range from {@link updateIdx}
+     */
+    const div1 = document.createElement('div'),
+    div2 = document.createElement('div');
+    div1.className = 'ios-switch--dummy';
+    div2.className = 'ios-switch--dummy';
+
+    root.insertBefore(div1, root.firstChild);
+    root.appendChild(div2);
+  } else {
+    const fc = /** @type {Node} */ (root.firstElementChild?.cloneNode(true)),
+          lc = /** @type {Node} */ (root.lastElementChild?.cloneNode(true));
+    
+    root.insertBefore(lc, root.firstChild);
+    root.appendChild(fc);
+
+    function animateScroll() {
+      if (root[GScrollRef] === 0) {
+        root[GScrollRef] = getScrollPositionByIdx(N - 2);
+      } else if (root[GScrollRef] === GTotalLength) {
+        root[GScrollRef] = getScrollPositionByIdx(1);
+      }
+      
+      requestAnimationFrame(animateScroll);
+    }
+
+    requestAnimationFrame(animateScroll);
   }
     
   const N = root.children.length;
-  const COOR = new MouseCoor();
-  const THRESHOLD = LENGTH / 2.5;
-  TOTAL_LENGTH = LENGTH * N;
+  const GCoor = new MouseCoor();
+  const GScrollEndCallbackList = [];
+  const GChildrenIdxMap = [...root.children].reduce((prev, curr, i) => prev.set(curr, i), new Map());
+  
+  GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 2);
+
 // ---------------------------------------------------------------
+  const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
+    if (info.isIntersecting) GIdx = GChildrenIdxMap.get(info.target);
+  }), {
+    threshold: 0.55
+  });
+
+  GChildrenIdxMap.forEach((i, elem) => {
+    if (!initObj.infinite && (i === 0 || i === N - 1)) return;
+    ioForGIdxUpdate.observe(elem);
+  });
 
 
   /**
@@ -113,59 +158,50 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
    * https://gist.github.com/markgoodyear/9496715
    */
   function moveTo(dest, duration) {
-    const from = root[SCROLL_REF],
+    const from = root[GScrollRef],
       start = Date.now();
 
     function scroll() {
-      if (!lifeCycle) return;
+      if (!GLifeCycle) return;
 
       const currentTime = Date.now(),
         time = Math.min(1, ((currentTime - start) / duration)),
         easedT = Ease.easeOutExpo(time);
 
-      root[SCROLL_REF] = (easedT * (dest - from)) + from;
+      root[GScrollRef] = (easedT * (dest - from)) + from;
 
       if (time < 1) requestAnimationFrame(scroll);
-      // else
+      else GScrollEndCallbackList.forEach((_cb) => _cb());
     }
 
     requestAnimationFrame(scroll);
   }
 
-  function updateIdx() {
-    const dist = direction === 'horizontal' ? (COOR.x2 - COOR.x1) : (COOR.y2 - COOR.y1);
+  // function updateIdx() {
+  //   const dist = direction === 'horizontal' ? (GCoor.x2 - GCoor.x1) : (GCoor.y2 - GCoor.y1);
 
-    if (THRESHOLD <= Math.abs(dist)) {
-      const d = dist > 0 ? -1 : 1;
-      idx = minMax(idx + d, 0, N - 1);
-    }
-  }
-
-  function renderList() {
-    [...listUl.children].forEach((elem, _idx) => {
-      if (idx === _idx) elem.classList.add("select");
-      else elem.classList.remove("select");
-    })
-  }
+  //   if (GThresold <= Math.abs(dist)) {
+  //     const d = dist > 0 ? -1 : 1;
+  //     GIdx = minMax(GIdx + d, MIN_IDX, MAX_IDX);
+  //   }
+  // }
 // ---------------------------------------------------------------
 
 // event handler for PC
   if (!isMobile()) {
     // moving start
     root.addEventListener('mousedown', (e) => {
-      lifeCycle = false;
-      COOR.setIsClickingOn(e.x, e.y);
-      iosFadeIn(listContainer);
+      GLifeCycle = false;
+      GCoor.setIsClickingOn(e.x, e.y);
     });
 
     // while moving
     root.addEventListener('mousemove', (e) => {
-      e.stopPropagation();
-      COOR.update(e.x, e.y, () => {
-        const from = root[SCROLL_REF];
+      GCoor.update(e.x, e.y, () => {
+        const from = root[GScrollRef];
         const movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`];
 
-        root[SCROLL_REF] = minMax(from + -movement, 0, TOTAL_LENGTH);
+        root[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
       });
     });
 
@@ -173,21 +209,15 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     
     /** @param {MouseEvent} e */
     const handler = (e) => {
-      lifeCycle = true;
+      GLifeCycle = true;
 
-      COOR.update(e.x, e.y, () => {
-        updateIdx();
-        renderList();
-        moveTo(getScrollPositionByIdx(idx), 1000);
-      });
+      GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1000));
 
-      COOR.setIsClickingOff();
-      iosFadeOut(listContainer);
+      GCoor.setIsClickingOff();
     };
 
     root.addEventListener('mouseup', handler);
     root.addEventListener('mouseleave', handler);
-
   }
 // ---------------------------------------------------------------
 // event handler for MOBILE
@@ -225,74 +255,139 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 
 // scroll event animation for each child
   const { OPACITY_INIT, SCALE_INIT } = initObj;
-  const children = [...root.children];
-  const elemCoor = children.map((_, idx) => getScrollPositionByIdx(idx));
+  /** @type {Map<Element, boolean>} */
+  const showingMap = new Map();
+  const coorList = range(N, 0);
 
-  children.forEach(elem => {
+  const ioForRenderTiming = new IntersectionObserver((entries) => entries.forEach(info => {
+    let isShowing = info.isIntersecting;
+
+    showingMap.set(info.target, isShowing);
+  }));
+  
+  GChildrenIdxMap.forEach((i, elem) => {
+    coorList[i] = getScrollPositionByIdx(i);
+
+    // observe only 2 ~ N - 3
+    if (1 < i && i < N - 2) {
+      ioForRenderTiming.observe(elem);
+      showingMap.set(elem, false);
+    } 
+    // 4 elements always render for smooth animation
+    else {
+      showingMap.set(elem, true);
+    }
+
     // @ts-ignore
-    elem.style.scale = SCALE_INIT;
-    // @ts-ignore
-    elem.style.filter = `brightness(${OPACITY_INIT})`;
+    elem.style.scale = String(SCALE_INIT); elem.style.opacity = String(OPACITY_INIT);
   });
 
-  function renderChild() {
-    children.forEach((elem, idx) => {
-      const ratio = minMax(Math.abs(elemCoor[idx] - root[SCROLL_REF]), 0, LENGTH) / LENGTH;
-      // RATIO_INIT + (1 - RATIO_INIT) * (1 - ratio);
-      // @ts-ignore
-      const alpha = 1 - ratio * (1 - SCALE_INIT), beta = 1 - ratio * (1 - OPACITY_INIT);
-      // @ts-ignore
-      elem.style.scale = alpha;
-      // @ts-ignore
-      elem.style.filter = `brightness(${beta})`;
-    });
-
-    requestAnimationFrame(renderChild);
+  /***
+   * @param {number} i
+   */
+  function getRatio(i) {
+    return Math.abs(coorList[i] - root[GScrollRef]);
   }
-
-  requestAnimationFrame(renderChild);
-// ---------------------------------------------------------------
-
 
   /**
-   * add dummy div for spring like scroll animation
-   * check the idx range from {@link updateIdx}
+   * @param {Element} elem 
+   * @param {number} i 
    */
-  const div1 = document.createElement('div'),
-  div2 = document.createElement('div');
-  div1.className = 'ios-switch--dummy';
-  div2.className = 'ios-switch--dummy';
+  function styleChildByIdx(elem, i) {
+    let dis;
+    if (i === 0) { // sync style (0) <-> (N - 2)
+      dis = Math.min(getRatio(0), getRatio(N - 2));
+    } else if (i === N - 1) { // sync style (1) <-> (N - 2)
+      dis = Math.min(getRatio(1), getRatio(N - 1));
+    } else {
+      dis = getRatio(i);
+    }
 
-  root.insertBefore(div1, root.firstChild);
-  root.appendChild(div2);
+    const ratio = minMax(dis, 0, GLength) / GLength;
 
-  setTimeout(() => {
-    root[SCROLL_REF] = getScrollPositionByIdx(0);
-  });
+    const alpha = 1 - ratio * (1 - SCALE_INIT), 
+          beta = 1 - ratio * (1 - OPACITY_INIT);
+
+    // @ts-ignore
+    elem.style.scale = String(alpha); elem.style.opacity = String(beta);
+  }
+
+  function renderChildren() {
+    GChildrenIdxMap.forEach((i, elem) => {
+      const isShowing = showingMap.get(elem);
+
+      if (!isShowing) return;
+
+      styleChildByIdx(elem, i);
+    });
+
+    requestAnimationFrame(renderChildren);
+  }
+
+  requestAnimationFrame(renderChildren);
 // ---------------------------------------------------------------
 
 
-  listContainer.className = 'ios-switch--list-container';
-  if (direction === 'horizontal') {
-    listContainer.style.width = `${TOTAL_LENGTH + LENGTH}px`;
-  } else {
-    listContainer.style.height = `${TOTAL_LENGTH + LENGTH}px`;
-  }
-
-  listUl.className = 'ios-switch--list-ul';
-  listUl.classList.add(direction === 'horizontal' ? 'hor' : 'ver');
-  listUl.innerHTML = range(N).map(() => `<li></li>`).join('\n');
-
-  listContainer.append(listUl);
-
+// list ui featuer
   if (initObj.listUi) {
-    root.appendChild(listContainer);
-    renderList();
-  } else {
-    listContainer.remove();
-  }
+    const listContainer = document.createElement('div');
+    const listUl = document.createElement('ul');
 
+    listContainer.className = 'ios-switch--list-container';
+    if (direction === 'horizontal') {
+      listContainer.style.width = `${GTotalLength + GLength}px`;
+    } else {
+      listContainer.style.height = `${GTotalLength + GLength}px`;
+    }
+  
+    listUl.className = 'ios-switch--list-ul';
+    listUl.classList.add(direction === 'horizontal' ? 'hor' : 'ver');
+    listUl.innerHTML = range(N - 2).map(() => `<li></li>`).join('\n');
+  
+    listContainer.append(listUl);
+    root.append(listContainer);
+
+    const listUlChildren = [...listUl.children];
+    
+    function renderList() {
+      let currentIdx = GIdx;
+      
+      if (initObj.infinite) {
+        if (currentIdx === N - 1) currentIdx = 1;
+        else if (currentIdx === 0) currentIdx = N - 2;
+      }
+
+      listUlChildren.forEach((elem, _idx) => {
+        if (currentIdx === _idx + 1) elem.classList.add("select");
+        else elem.classList.remove("select");
+      })
+    }
+
+    root.addEventListener("mousedown", () => {
+      iosFadeIn(listContainer);
+    });
+
+    function animateList() {
+      renderList();
+      requestAnimationFrame(animateList);
+    }
+
+    requestAnimationFrame(animateList);
+
+    GScrollEndCallbackList.push(() => iosFadeOut(listContainer));
+
+    renderList();
+  }
 // ---------------------------------------------------------------
+
+
+  (function initScroll() {
+    // as complicated style issue, the module need to set scroll position not immediately but later by 
+    // using Web API from browser which has special process queue; Callback Queue.
+    setTimeout(() => {
+      root[GScrollRef] = getScrollPositionByIdx(1);
+    });
+  })();
 }
 
 /**

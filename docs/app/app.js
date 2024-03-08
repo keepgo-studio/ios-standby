@@ -22,7 +22,8 @@ class Screen3 extends Component {
     addSwitchAnimation(screen3, 'vertical', {
       listUi: true,
       SCALE_INIT: 0.8,
-      OPACITY_INIT: 0
+      OPACITY_INIT: 0,
+      infinite: false
     });
   }
 }

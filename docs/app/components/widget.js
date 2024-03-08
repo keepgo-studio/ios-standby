@@ -11,7 +11,7 @@ import { Weather } from "../service/weather/weather.js";
 class Home extends SubscribeComponent {
   render() {
     this.innerHTML = `
-      <section id="widget-home">
+      <section class="widget-home">
         <div class="container">
           <header>
           --
@@ -118,7 +118,7 @@ class Home extends SubscribeComponent {
 class Online extends SubscribeComponent {
   render() {
     this.innerHTML = `
-      <section id="widget-internet">
+      <section class="widget-internet">
         <div class="container">
           <div class="svg-wrapper"></div>
 
@@ -168,7 +168,7 @@ class Online extends SubscribeComponent {
 class Store extends Component {
   render() {
     this.innerHTML = `
-      <section id="widget-store">
+      <section class="widget-store">
         <div class="container">
         ${IOS_STORE}
         </div>
@@ -196,7 +196,8 @@ class Widget extends Component {
     addSwitchAnimation(container, 'vertical', {
       SCALE_INIT: 0.8,
       OPACITY_INIT: 0,
-      listUi: true
+      listUi: true,
+      infinite: true
     });
   }
 }
