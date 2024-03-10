@@ -444,19 +444,20 @@
     root2.classList.add("ios-switch--container");
     [...root2.children].forEach((elem) => elem.classList.add("ios-switch--item"));
     let GIdx = 1, GLifeCycle = false, GLength, GScrollRef, GTotalLength;
+    const GWindowResizeCallbackList = [];
+    root2.style.overflow = "hidden";
     if (direction === "horizontal") {
       GLength = root2.offsetWidth;
       GScrollRef = "scrollLeft";
-      root2.style.overflowX = isMobile() ? "hidden" : "hidden";
-      root2.style.overflowY = "hidden";
       root2.style.flexWrap = "nowrap";
     } else {
       GLength = root2.offsetHeight;
       GScrollRef = "scrollTop";
-      root2.style.overflowX = "hidden";
-      root2.style.overflowY = isMobile() ? "hidden" : "hidden";
       root2.style.flexDirection = "column";
     }
+    GWindowResizeCallbackList.push(() => {
+      GLength = direction === "horizontal" ? root2.offsetWidth : root2.offsetHeight;
+    });
     const SPRING_RATIO = 0.3;
     function getScrollPositionByIdx(_idx) {
       if (initObj.infinite) {
@@ -476,6 +477,12 @@
       div2.style.height = SPRING_RATIO * GLength + "px";
       root2.insertBefore(div1, root2.firstChild);
       root2.appendChild(div2);
+      GWindowResizeCallbackList.push(() => {
+        div1.style.width = SPRING_RATIO * GLength + "px";
+        div1.style.height = SPRING_RATIO * GLength + "px";
+        div2.style.width = SPRING_RATIO * GLength + "px";
+        div2.style.height = SPRING_RATIO * GLength + "px";
+      });
     } else {
       let animateScroll = function() {
         if (root2[GScrollRef] === 0) {
@@ -501,6 +508,9 @@
     const GScrollEndCallbackList = [];
     const GChildrenIdxMap = [...root2.children].reduce((prev, curr, i) => prev.set(curr, i), /* @__PURE__ */ new Map());
     GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
+    GWindowResizeCallbackList.push(() => {
+      GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
+    });
     const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
       const i = GChildrenIdxMap.get(info.target);
       if (i !== GIdx && info.isIntersecting)
@@ -609,6 +619,9 @@
       elem.style.scale = String(SCALE_INIT);
       elem.style.opacity = String(OPACITY_INIT);
     });
+    GWindowResizeCallbackList.push(() => {
+      GChildrenIdxMap.forEach((i) => coorList[i] = getScrollPositionByIdx(i));
+    });
     function getRatio(i) {
       return Math.abs(coorList[i] - root2[GScrollRef]);
     }
@@ -637,7 +650,13 @@
     }
     requestAnimationFrame(renderChildren);
     if (initObj.listUi) {
-      let renderList = function() {
+      let setLengthListContainer = function() {
+        if (direction === "horizontal") {
+          listContainer.style.width = `${GTotalLength + GLength}px`;
+        } else {
+          listContainer.style.height = `${GTotalLength + GLength}px`;
+        }
+      }, renderList = function() {
         let currentIdx = GIdx;
         if (initObj.infinite) {
           if (currentIdx === N - 1)
@@ -658,11 +677,8 @@
       const listContainer = document.createElement("div");
       const listUl = document.createElement("ul");
       listContainer.className = "ios-switch--list-container";
-      if (direction === "horizontal") {
-        listContainer.style.width = `${GTotalLength + GLength}px`;
-      } else {
-        listContainer.style.height = `${GTotalLength + GLength}px`;
-      }
+      setLengthListContainer();
+      GWindowResizeCallbackList.push(() => setLengthListContainer());
       listUl.className = "ios-switch--list-ul";
       listUl.classList.add(direction === "horizontal" ? "hor" : "ver");
       listUl.innerHTML = range(N - 2).map(() => `<li></li>`).join("\n");
@@ -676,11 +692,17 @@
       GScrollEndCallbackList.push(() => iosFadeOut(listContainer));
       renderList();
     }
-    (function initScroll() {
+    function initScroll(i) {
       setTimeout(() => {
+        GIdx = 1;
         root2[GScrollRef] = getScrollPositionByIdx(1);
       });
-    })();
+    }
+    GWindowResizeCallbackList.push(() => initScroll(1));
+    window.addEventListener("resize", () => GWindowResizeCallbackList.forEach((callback) => {
+      callback();
+    }));
+    initScroll(1);
   }
   function getFadeClass(mode) {
     let appearClassName = "", disappearClassName = "";
@@ -767,7 +789,7 @@
     }
     draw() {
     }
-    setStates() {
+    resize() {
     }
     animation() {
       if (!this._lifeCycle)
@@ -788,7 +810,8 @@
     }
     afterMount() {
       this._ref();
-      this.setStates();
+      window.addEventListener("resize", this.resize.bind(this));
+      this.resize();
       this.subscribeViewport();
       requestAnimationFrame(this.animation.bind(this));
     }
@@ -876,7 +899,7 @@
       this._ctx.restore();
     }
     drawHourNums() {
-      const fontSize = this._cWidth / 16;
+      const fontSize = this._cWidth / 18;
       this._ctx.font = `600 ${fontSize}px "SF Pro Display"`;
       this._ctx.textAlign = "center";
       this._ctx.textBaseline = "middle";
@@ -913,12 +936,12 @@
       this._ctx.shadowColor = "rgba(0,0,0,0.15)";
       this._ctx.shadowBlur = 10;
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+      this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
       this._ctx.moveTo(0, 0);
       this._ctx.lineTo(0, -this._radius / 1.6);
       this._ctx.stroke();
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+      this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
       this._ctx.moveTo(0, -this._radius / 5);
       this._ctx.lineTo(0, -this._radius / 1.6);
       this._ctx.stroke();
@@ -936,12 +959,12 @@
       this._ctx.beginPath();
       this._ctx.shadowColor = "rgba(0,0,0,0.5)";
       this._ctx.shadowBlur = 10;
-      this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+      this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
       this._ctx.moveTo(0, 0);
       this._ctx.lineTo(0, -this._radius);
       this._ctx.stroke();
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+      this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
       this._ctx.moveTo(0, -this._radius / 5);
       this._ctx.lineTo(0, -this._radius);
       this._ctx.stroke();
@@ -970,7 +993,7 @@
       this._ctx.arc(0, 0, minMax(this._cHeight / 120, 1, 8), 0, 2 * Math.PI);
       this._ctx.fill();
     }
-    setStates() {
+    resize() {
       const retina = window.devicePixelRatio;
       if (retina > 1) {
         this._canvas.width = this._root.offsetWidth * retina;
@@ -1016,7 +1039,7 @@
     }
     drawPointers() {
       this._ctx.lineCap = "round";
-      this._ctx.lineWidth = minMax(this._cWidth / 83, 4, 6);
+      this._ctx.lineWidth = minMax(this._cHeight / 120, 1, 6);
       const n = 60;
       range(n).forEach((_, idx) => {
         let rad = 2 * Math.PI / n * idx;
@@ -1035,7 +1058,7 @@
       this._ctx.restore();
     }
     drawHourNums() {
-      const fontSize = this._cWidth / 10;
+      const fontSize = this._cWidth / 12;
       this._ctx.font = `${fontSize}px "SF Pro Display"`;
       this._ctx.textAlign = "center";
       this._ctx.textBaseline = "middle";
@@ -1070,12 +1093,12 @@
       this._ctx.shadowColor = "rgba(0,0,0,0.15)";
       this._ctx.shadowBlur = 10;
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+      this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
       this._ctx.moveTo(0, 0);
       this._ctx.lineTo(0, -this._radius / 1.6);
       this._ctx.stroke();
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+      this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
       this._ctx.moveTo(0, -this._radius / 6);
       this._ctx.lineTo(0, -this._radius / 1.6);
       this._ctx.stroke();
@@ -1093,12 +1116,12 @@
       this._ctx.beginPath();
       this._ctx.shadowColor = "rgba(0,0,0,0.5)";
       this._ctx.shadowBlur = 10;
-      this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+      this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
       this._ctx.moveTo(0, 0);
       this._ctx.lineTo(0, -this._radius / 1.01);
       this._ctx.stroke();
       this._ctx.beginPath();
-      this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+      this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
       this._ctx.moveTo(0, -this._radius / 6);
       this._ctx.lineTo(0, -this._radius / 0.98);
       this._ctx.stroke();
@@ -1127,7 +1150,7 @@
       this._ctx.arc(0, 0, minMax(this._cHeight / 120, 1, 8), 0, 2 * Math.PI);
       this._ctx.fill();
     }
-    setStates() {
+    resize() {
       let w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
       const retina = window.devicePixelRatio;
       if (retina > 1) {
