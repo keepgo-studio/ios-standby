@@ -67,19 +67,14 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   let GIdx = 1, GLifeCycle = false, GLength, GScrollRef, GTotalLength;
   const GWindowResizeCallbackList = [];
 
+  root.style.overflow = 'hidden';
   if (direction === 'horizontal') {
     GLength = root.offsetWidth;
     GScrollRef = 'scrollLeft';
-
-    root.style.overflowX = isMobile() ? 'hidden' : 'hidden';
-    root.style.overflowY = 'hidden';
     root.style.flexWrap = 'nowrap';
   } else {
     GLength = root.offsetHeight;
     GScrollRef = 'scrollTop';
-
-    root.style.overflowX = 'hidden';
-    root.style.overflowY = isMobile() ? 'hidden' : 'hidden';
     root.style.flexDirection = 'column';
   }
   
