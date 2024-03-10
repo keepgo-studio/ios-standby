@@ -59,11 +59,13 @@ class MouseCoor {
  * }} [initObj]
  */
 export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false, infinite: false }) {
+  // init, setting Environment and Global Variable
   root.classList.add("ios-switch--container");
   
   [...root.children].forEach((elem) => elem.classList.add("ios-switch--item"));
 
   let GIdx = 1, GLifeCycle = false, GLength, GScrollRef, GTotalLength;
+  const GWindowResizeCallbackList = [];
 
   if (direction === 'horizontal') {
     GLength = root.offsetWidth;
@@ -80,9 +82,11 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     root.style.overflowY = isMobile() ? 'hidden' : 'hidden';
     root.style.flexDirection = 'column';
   }
+  
+  GWindowResizeCallbackList.push(() => {
+    GLength = direction === 'horizontal' ? root.offsetWidth : root.offsetHeight;
+  });
 
-
-// setting Environment and Global Variable
   const SPRING_RATIO = 0.3;
   /**
    * @param {number} _idx 
@@ -115,6 +119,13 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 
     root.insertBefore(div1, root.firstChild);
     root.appendChild(div2);
+
+    GWindowResizeCallbackList.push(() => {
+      div1.style.width = SPRING_RATIO * GLength + "px";
+      div1.style.height = SPRING_RATIO * GLength + "px";
+      div2.style.width = SPRING_RATIO * GLength + "px";
+      div2.style.height = SPRING_RATIO * GLength + "px";
+    });
   } else {
     const fc = /** @type {Node} */ (root.firstElementChild?.cloneNode(true)),
           lc = /** @type {Node} */ (root.lastElementChild?.cloneNode(true));
@@ -141,7 +152,9 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   const GChildrenIdxMap = [...root.children].reduce((prev, curr, i) => prev.set(curr, i), new Map());
   
   GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
-
+  GWindowResizeCallbackList.push(() => {
+    GTotalLength = initObj.infinite ? GLength * (N - 1) : GLength * (N - 3 + SPRING_RATIO * 2);
+  });
 // ---------------------------------------------------------------
   const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
     const i = GChildrenIdxMap.get(info.target);
@@ -317,6 +330,10 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     elem.style.scale = String(SCALE_INIT); elem.style.opacity = String(OPACITY_INIT);
   });
 
+  GWindowResizeCallbackList.push(() => {
+    GChildrenIdxMap.forEach(i => coorList[i] = getScrollPositionByIdx(i));
+  });
+
   /***
    * @param {number} i
    */
@@ -369,11 +386,17 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     const listUl = document.createElement('ul');
 
     listContainer.className = 'ios-switch--list-container';
-    if (direction === 'horizontal') {
-      listContainer.style.width = `${GTotalLength + GLength}px`;
-    } else {
-      listContainer.style.height = `${GTotalLength + GLength}px`;
+
+    function setLengthListContainer() {
+      if (direction === 'horizontal') {
+        listContainer.style.width = `${GTotalLength + GLength}px`;
+      } else {
+        listContainer.style.height = `${GTotalLength + GLength}px`;
+      }
     }
+
+    setLengthListContainer();
+    GWindowResizeCallbackList.push(() => setLengthListContainer());
   
     listUl.className = 'ios-switch--list-ul';
     listUl.classList.add(direction === 'horizontal' ? 'hor' : 'ver');
@@ -413,16 +436,28 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
 
     renderList();
   }
-// ---------------------------------------------------------------
+  // ---------------------------------------------------------------
 
 
-  (function initScroll() {
+  /**
+   * @param {number} i 
+   */
+  function initScroll(i) {
     // as complicated style issue, the module need to set scroll position not immediately but later by 
     // using Web API from browser which has special process queue; Callback Queue.
     setTimeout(() => {
+      GIdx = 1;
       root[GScrollRef] = getScrollPositionByIdx(1);
     });
-  })();
+  }
+  
+  GWindowResizeCallbackList.push(() => initScroll(1));
+
+  window.addEventListener('resize', () => GWindowResizeCallbackList.forEach(callback => {
+    callback();
+  }));
+
+  initScroll(1);
 }
 
 /**

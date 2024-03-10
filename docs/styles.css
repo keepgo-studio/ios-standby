@@ -14,8 +14,9 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  user-select: none;
   padding: 5%;
+  user-select: none;
+  overscroll-behavior: none;
 }
 
 :root {

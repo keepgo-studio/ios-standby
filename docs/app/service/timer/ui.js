@@ -28,8 +28,7 @@ class TimerCoreComponent extends Component {
 
   draw() {}
 
-  setStates() {}
-
+  resize() {}
 
   animation() {
     if (!this._lifeCycle) return;
@@ -55,8 +54,9 @@ class TimerCoreComponent extends Component {
   afterMount() {
     this._ref();
 
-    this.setStates();
-    
+    window.addEventListener('resize', this.resize.bind(this));
+    this.resize();
+
     this.subscribeViewport();
 
     requestAnimationFrame(this.animation.bind(this));
@@ -174,7 +174,7 @@ class TimerUiRectClock extends TimerCoreComponent {
   }
 
   drawHourNums() {
-    const fontSize = this._cWidth / 16;
+    const fontSize = this._cWidth / 18;
     this._ctx.font = `600 ${fontSize}px "SF Pro Display"`;
     this._ctx.textAlign = "center";
     this._ctx.textBaseline = "middle";
@@ -219,13 +219,13 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.shadowBlur = 10;
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
     
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
     this._ctx.moveTo(0, - this._radius / 5);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
@@ -248,13 +248,13 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.beginPath();
     this._ctx.shadowColor = 'rgba(0,0,0,0.5)';
     this._ctx.shadowBlur = 10;
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius);
     this._ctx.stroke();
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
     this._ctx.moveTo(0, - this._radius / 5);
     this._ctx.lineTo(0, - this._radius);
     this._ctx.stroke();
@@ -290,7 +290,7 @@ class TimerUiRectClock extends TimerCoreComponent {
     this._ctx.fill();
   }
 
-  setStates() {
+  resize() {
     const retina = window.devicePixelRatio;
 
     if (retina > 1) {
@@ -352,7 +352,7 @@ class TimerUiCircleClock extends TimerCoreComponent {
   drawPointers() {
     this._ctx.lineCap = "round";
 
-    this._ctx.lineWidth = minMax(this._cWidth / 83, 4, 6);
+    this._ctx.lineWidth = minMax(this._cHeight / 120, 1, 6);
 
     const n = 60;
     range(n).forEach((_, idx) => {
@@ -374,7 +374,7 @@ class TimerUiCircleClock extends TimerCoreComponent {
   }
 
   drawHourNums() {
-    const fontSize = this._cWidth / 10;
+    const fontSize = this._cWidth / 12;
     this._ctx.font = `${fontSize}px "SF Pro Display"`;
     this._ctx.textAlign = "center";
     this._ctx.textBaseline = "middle";
@@ -415,13 +415,13 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.shadowBlur = 10;
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
     
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
     this._ctx.moveTo(0, - this._radius / 6);
     this._ctx.lineTo(0, - this._radius / 1.6);
     this._ctx.stroke();
@@ -444,13 +444,13 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.beginPath();
     this._ctx.shadowColor = 'rgba(0,0,0,0.5)';
     this._ctx.shadowBlur = 10;
-    this._ctx.lineWidth = minMax(this._cHeight / 64, 4, 16);
+    this._ctx.lineWidth = minMax(this._cHeight / 70, 2, 16);
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(0, - this._radius / 1.01);
     this._ctx.stroke();
 
     this._ctx.beginPath();
-    this._ctx.lineWidth = minMax(this._cHeight / 32, 6, 20);
+    this._ctx.lineWidth = minMax(this._cHeight / 38, 4, 20);
     this._ctx.moveTo(0, - this._radius / 6);
     this._ctx.lineTo(0, - this._radius / 0.98);
     this._ctx.stroke();
@@ -486,7 +486,7 @@ class TimerUiCircleClock extends TimerCoreComponent {
     this._ctx.fill();
   }
 
-  setStates() {
+  resize() {
     let w = Math.min(this._root.offsetWidth, this._root.offsetHeight);
 
     const retina = window.devicePixelRatio;
