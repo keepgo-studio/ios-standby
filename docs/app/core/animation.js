@@ -58,7 +58,7 @@ class MouseCoor {
  *    infinite: boolean;
  * }} [initObj]
  */
-export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false, infinite: false }) {
+export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.7, listUi: false, infinite: false }) {
   // init, setting Environment and Global Variable
   root.classList.add("ios-switch--container");
   
@@ -82,7 +82,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
     GLength = direction === 'horizontal' ? root.offsetWidth : root.offsetHeight;
   });
 
-  const SPRING_RATIO = 0.3;
+  const SPRING_RATIO = 0.6;
   /**
    * @param {number} _idx 
    * @returns {number}
@@ -154,9 +154,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
   const ioForGIdxUpdate = new IntersectionObserver((entries) => entries.forEach((info) => {
     const i = GChildrenIdxMap.get(info.target);
     if (i !== GIdx && info.isIntersecting) GIdx = i;
-  }), {
-    threshold: isMobile() ? 0.1 : 0.4
-  });
+  }));
 
   GChildrenIdxMap.forEach((i, elem) => {
     if (!initObj.infinite && (i === 0 || i === N - 1)) return;
@@ -228,7 +226,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
       GCoor.update(e.x, e.y, () => {
         const from = root[GScrollRef],
               cd = getAngleType(e.movementX, e.movementY),
-              movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`];
+              movement = e[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] * 0.7;
 
         if (cd === direction) {
           GMoveStart = true;
@@ -244,7 +242,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
       GMoveStart = false;
       GLifeCycle = true;
 
-      GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1000));
+      GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1500));
       GCoor.setIsClickingOff();
     };
 
@@ -274,7 +272,7 @@ export function addSwitchAnimation(root, direction, initObj = { OPACITY_INIT: 0,
               dy = GCoor.y2 - GCoor.y1,
               cd = getAngleType(dx, dy);
 
-        let dis = direction === 'horizontal' ? dx : dy;
+        let dis = (direction === 'horizontal' ? dx : dy) * 0.7;
 
         if (direction === cd) {
           GMoveStart = true;
