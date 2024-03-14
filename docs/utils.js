@@ -36,3 +36,11 @@ export function minMax(x, min, max) {
 export function delay(n = IOS_DURATION) {
   return new Promise(res => setTimeout(() => res(true), n));
 }
+
+export function isInIframe() {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}

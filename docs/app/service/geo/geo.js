@@ -1,5 +1,6 @@
 // @ts-check
 
+import { isInIframe } from "../../../utils.js";
 import { API } from "../api.js";
 
 /**
@@ -103,7 +104,11 @@ export class Geo {
 
         setInterval(() => this._loadGeo(), this._updateSec);
       },
-      () => alert("without geolocation, the app cannot get weather information")
+      () => {
+        if (!isInIframe()) {
+          alert("without geolocation, the app cannot get weather information")
+        }
+      }
     );
   }
 
