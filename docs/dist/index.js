@@ -440,7 +440,7 @@
         callback();
     }
   };
-  function addSwitchAnimation(root2, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.6, listUi: false, infinite: false }) {
+  function addSwitchAnimation(root2, direction, initObj = { OPACITY_INIT: 0, SCALE_INIT: 0.7, listUi: false, infinite: false }) {
     root2.classList.add("ios-switch--container");
     [...root2.children].forEach((elem) => elem.classList.add("ios-switch--item"));
     let GIdx = 1, GLifeCycle = false, GLength, GScrollRef, GTotalLength;
@@ -458,7 +458,7 @@
     GWindowResizeCallbackList.push(() => {
       GLength = direction === "horizontal" ? root2.offsetWidth : root2.offsetHeight;
     });
-    const SPRING_RATIO = 0.3;
+    const SPRING_RATIO = 0.6;
     function getScrollPositionByIdx(_idx) {
       if (initObj.infinite) {
         return GLength * _idx;
@@ -515,9 +515,7 @@
       const i = GChildrenIdxMap.get(info.target);
       if (i !== GIdx && info.isIntersecting)
         GIdx = i;
-    }), {
-      threshold: isMobile() ? 0.1 : 0.4
-    });
+    }));
     GChildrenIdxMap.forEach((i, elem) => {
       if (!initObj.infinite && (i === 0 || i === N - 1))
         return;
@@ -558,7 +556,7 @@
         if (GMoveStart)
           e.stopPropagation();
         GCoor.update(e.x, e.y, () => {
-          const from = root2[GScrollRef], cd = getAngleType(e.movementX, e.movementY), movement = e[`movement${direction === "horizontal" ? "X" : "Y"}`];
+          const from = root2[GScrollRef], cd = getAngleType(e.movementX, e.movementY), movement = e[`movement${direction === "horizontal" ? "X" : "Y"}`] * 0.7;
           if (cd === direction) {
             GMoveStart = true;
             root2[GScrollRef] = minMax(from + -movement, 0, GTotalLength);
@@ -568,7 +566,7 @@
       const handler = (e) => {
         GMoveStart = false;
         GLifeCycle = true;
-        GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1e3));
+        GCoor.update(e.x, e.y, () => moveTo(getScrollPositionByIdx(GIdx), 1500));
         GCoor.setIsClickingOff();
       };
       root2.addEventListener("mouseup", handler);
@@ -586,7 +584,7 @@
         GCoor.update(x, y, () => {
           const from = root2[GScrollRef];
           const dx = GCoor.x2 - GCoor.x1, dy = GCoor.y2 - GCoor.y1, cd = getAngleType(dx, dy);
-          let dis = direction === "horizontal" ? dx : dy;
+          let dis = (direction === "horizontal" ? dx : dy) * 0.7;
           if (direction === cd) {
             GMoveStart = true;
             root2[GScrollRef] = minMax(from + -dis, 0, GTotalLength);
